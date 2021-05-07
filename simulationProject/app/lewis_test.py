@@ -16,6 +16,5 @@ class GetTests(unittest.TestCase):
 
     def test_get_num_waiting_list(self):
         self.assertEqual(self.test_sim_instance.test_get_num_waiting_list(), )
-        self.assert
 
 
