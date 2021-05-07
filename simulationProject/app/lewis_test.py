@@ -9,12 +9,12 @@ class GetTests(unittest.TestCase):
         self.assertEqual(self.test_sim_instance.get_num_open_centres(), )
 
     def test_get_num_full_centres(self):
-        self.assertEqual(self.test_sim_instance.test_get_num_full_centres(), )
+        self.assertEqual(self.test_sim_instance.get_num_full_centres(), )
 
     def test_get_num_current_trainees(self):
-        self.assertEqual(self.test_sim_instance.test_get_num_current_trainees(), )
+        self.assertEqual(self.test_sim_instance.get_num_current_trainees(), )
 
     def test_get_num_waiting_list(self):
-        self.assertEqual(self.test_sim_instance.test_get_num_waiting_list(), )
+        self.assertEqual(self.test_sim_instance.get_num_waiting_list(), )
 
 
