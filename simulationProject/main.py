@@ -4,5 +4,7 @@ import configparser
 # Read local `config.ini` file.
 config = configparser.ConfigParser()
 config.read('config.ini')
-post_code = config.get('INPUT', 'months')
+months = config.get('INPUT', 'months')
+
+print(months)
 
