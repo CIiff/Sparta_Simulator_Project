@@ -6,7 +6,6 @@
 # number of trainees on the waiting list
 import random
 
-
 class SpartaSimulation:
 
     def __init__(self, month):
@@ -34,11 +33,3 @@ class SpartaSimulation:
 
     def get_num_waiting_list(self):
         return self.num_waiting_list
-
-# AS A user
-# I WANT a method to generate random trainees
-# SO THAT they can be added to courses every month
-# between 20 and 30
-
-
-print(SpartaSimulation(2).get_num_current_trainees())
