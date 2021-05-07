@@ -20,4 +20,8 @@ class GetTests(unittest.TestCase):
         self.assertGreaterEqual(self.sim.trainee_generator(), 20*self.sim.month)
         self.assertLessEqual(self.sim.trainee_generator(), 30*self.sim.month)
 
+    def test_get_num_trainees(self):
+        self.assertGreaterEqual(self.sim.get_num_trainees(), 20*self.sim.month)
+        self.assertLessEqual(self.sim.get_num_trainees(), 30*self.sim.month)
+
 
