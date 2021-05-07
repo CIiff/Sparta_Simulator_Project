@@ -9,6 +9,7 @@ class SpartaSimulation:
         self.num_full_centres = 0
         self.num_current_trainees = 0
         self.num_waiting_list = 0
+        self.centers = self.create_center()
 
     def month_inc(self):
         self.current_month += 1
@@ -24,6 +25,14 @@ class SpartaSimulation:
 
     def get_num_waiting_list(self):
         return self.num_waiting_list
+
+    def create_center(self):
+        return {1:0}
+
+    def add_new_center(self):
+        newcenter_id = len(self.centers.keys()) + 1
+        self.centers.update({newcenter_id: 0})
+
 
 
 
