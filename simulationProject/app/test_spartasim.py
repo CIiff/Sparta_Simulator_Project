@@ -13,6 +13,7 @@ class SpartaSimulationTests (unittest.TestCase):
         self.assertEqual(self.sim.current_month, initial_value+1)
         self.sim.current_month = initial_value
 
+
     #tests get functions:
     def test_get_num_open_centres(self):
         self.assertEqual(self.sim.get_num_open_centres(), 0)
