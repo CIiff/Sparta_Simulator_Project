@@ -1,5 +1,7 @@
 class SpartaSimulation:
 
+    centre_max_capacity = 100
+
     def __init__(self, month):
         self.month = month
         self.current_month = 1
