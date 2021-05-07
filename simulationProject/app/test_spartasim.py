@@ -2,7 +2,7 @@ import unittest
 from spartasim import SpartaSimulation
 
 
-class TestSpartaSim (unittest.TestCase):
+class SpartaSimulationTests (unittest.TestCase):
 
     sim = SpartaSimulation(4)
 
