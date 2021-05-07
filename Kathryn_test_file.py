@@ -34,3 +34,9 @@ class SpartaSimulation:
     def get_num_waiting_list(self):
         return self.num_waiting_list
 
+    def trainee_generator(self):
+        total_trainees = 0
+        for month in range(self.month):
+            new_trainees = random.randint(20, 30)
+            total_trainees += new_trainees
+        return total_trainees
