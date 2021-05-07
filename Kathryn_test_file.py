@@ -6,16 +6,16 @@
 # number of trainees on the waiting list
 
 def get_num_open_centres(self):
-    pass
+    return self.num_open_centres
 
 
 def get_num_full_centres(self):
-    pass
+    return self.num_full_centres
 
 
 def get_num_current_trainees(self):
-    pass
+    return self.num_current_trainees
 
 
 def get_num_waiting_list(self):
-    pass
+    return self.num_waiting_list
