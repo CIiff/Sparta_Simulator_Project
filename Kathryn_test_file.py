@@ -33,3 +33,4 @@ class SpartaSimulation:
 
     def get_num_waiting_list(self):
         return self.num_waiting_list
+

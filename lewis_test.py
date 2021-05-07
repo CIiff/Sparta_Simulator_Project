@@ -11,8 +11,8 @@ class GetTests(unittest.TestCase):
         self.assertEqual(self.sim.get_num_open_centres(), 0)
     def test_get_num_full_centres(self):
         self.assertEqual(self.sim.get_num_full_centres(), 0)
-    def test_get_num_current_trainees(self):
-        self.assertEqual(self.sim.get_num_current_trainees(), 0)
+    # def test_get_num_current_trainees(self):
+    #     self.assertEqual(self.sim.get_num_current_trainees(), 0)
     def test_get_num_waiting_list(self):
         self.assertEqual(self.sim.get_num_waiting_list(), 0)
 
@@ -21,7 +21,7 @@ class GetTests(unittest.TestCase):
         self.assertLessEqual(self.sim.trainee_generator(), 30*self.sim.month)
 
     def test_get_num_trainees(self):
-        self.assertGreaterEqual(self.sim.get_num_trainees(), 20*self.sim.month)
-        self.assertLessEqual(self.sim.get_num_trainees(), 30*self.sim.month)
+        self.assertGreaterEqual(self.sim.get_num_current_trainees(), 20*self.sim.month)
+        self.assertLessEqual(self.sim.get_num_current_trainees(), 30*self.sim.month)
 
 
