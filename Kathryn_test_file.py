@@ -1,9 +1,3 @@
-# AS A user I WANT a get function SO THAT I can return the sim output
-
-# number of open centres
-# number of full centres
-# number of trainees currently training
-# number of trainees on the waiting list
 import random
 
 class SpartaSimulation:
@@ -33,3 +27,10 @@ class SpartaSimulation:
 
     def get_num_waiting_list(self):
         return self.num_waiting_list
+
+# AS A user
+# I WANT a method to add a training centre
+# SO THAT trainees can be enrolled in the centres
+
+sim = SpartaSimulation(4)
+print(sim.get_num_current_trainees())
