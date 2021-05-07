@@ -14,9 +14,6 @@ class SpartaSimulation:
         self.num_current_trainees = 0
         self.num_waiting_list = 0
 
-    def month_inc(self):
-        self.month += 1
-
     def get_num_open_centres(self):
         return self.num_open_centres
 
