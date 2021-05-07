@@ -6,15 +6,13 @@ class GetTests(unittest.TestCase):
 
     sim = SpartaSimulation(4)
 
+    # tests get functions:
     def test_get_num_open_centres(self):
         self.assertEqual(self.sim.get_num_open_centres(), 0)
-
     def test_get_num_full_centres(self):
         self.assertEqual(self.sim.get_num_full_centres(), 0)
-
     def test_get_num_current_trainees(self):
         self.assertEqual(self.sim.get_num_current_trainees(), 0)
-
     def test_get_num_waiting_list(self):
         self.assertEqual(self.sim.get_num_waiting_list(), 0)
 
