@@ -1,8 +1,7 @@
 import random
 
-class SpartaSimulation:
 
-    centre_max_capacity = 100
+class SpartaSimulation:
 
     def __init__(self, month):
         self.month = month
@@ -11,7 +10,8 @@ class SpartaSimulation:
         self.num_full_centres = 0
         self.num_current_trainees = 0
         self.num_waiting_list = 0
-        self.centers = {1:0}
+        self.centers = {1: 0}
+        self.centre_max_capacity = 100
 
     def month_inc(self):
         self.current_month += 1
@@ -32,14 +32,20 @@ class SpartaSimulation:
         return self.num_waiting_list
 
     def add_new_center(self):
-        newcenter_id = len(self.centers.keys()) + 1
-        self.centers.update({newcenter_id: 0})
+        new_center_id = len(self.centers.keys()) + 1
+        self.centers.update({new_center_id: 0})
 
+    def assign_trainees_to_center(self):
+        self.num_waiting_list += self.num_current_trainees
+        for key in self.centers.keys():
+            trainees = min(self.centre_max_capacity - self.centers[key], self.num_waiting_list)
+            self.centers[key] += trainees
+            self.num_waiting_list -= trainees
 
-
-
-
-
-
-
-
+    def simulation_loop(self):
+        while self.current_month <= self.month:
+            if self.current_month % 2 == 1 and self.current_month != 1:
+                self.add_new_center()
+            self.trainee_generator()
+            self.assign_trainees_to_center()
+            self.month_inc()
