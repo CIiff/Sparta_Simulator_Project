@@ -129,3 +129,7 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+
+# ignoring test files (user added)
+group_git_test_files/
