@@ -12,7 +12,6 @@ and output the following:
 <li>number of trainees on the waiting list </li> 
 </ol>
 
-End user must only interact with the 'Main' file!
 
 ## Prerequisites
 
