@@ -23,3 +23,4 @@ class SpartaSimulationTests (unittest.TestCase):
         self.assertEqual(self.sim.get_num_current_trainees(), 0)
     def test_get_num_waiting_list(self):
         self.assertEqual(self.sim.get_num_waiting_list(), 0)
+
