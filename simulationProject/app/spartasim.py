@@ -47,10 +47,16 @@ class SpartaSimulation:
         fig, ax = plt.subplots()
         ax.set_xlabel('Centre number')
         ax.set_ylabel('Trainees in centre')
-        # add legend - wait for new init parameter to keep count of total trainees
+
+        num_trainee_labels = []
         for i in sorted(self.centers.keys()):
-            ax.bar(i, self.centers[i])
+            ax.bar(str(i), self.centers[i])
+            num_trainee_labels.append(self.centers[i])
         ax.bar('waiting list', self.num_waiting_list, color='r')
+        num_trainee_labels.append(self.num_waiting_list)
+        for index, value in enumerate(num_trainee_labels):
+            ax.text(index, (value + 2), str(value), ha='center', va='center')
+
         fig.savefig('filled_centres_bar.pdf')
 
     def csv_write(self, csv_file_name):
