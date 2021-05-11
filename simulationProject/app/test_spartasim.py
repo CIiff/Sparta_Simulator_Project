@@ -37,6 +37,8 @@ class SpartaSimulationTests(unittest.TestCase):
         for v in self.sim.centers.values():
             self.assertLessEqual(v, 100)
 
+        self.sim.num_monthly_trainees = 0
+
         self.sim.centers = {1: 50}
         self.sim.num_waiting_list = 150
         self.sim.assign_trainees_to_center()
@@ -69,3 +71,21 @@ class SpartaSimulationTests(unittest.TestCase):
         self.assertEqual(self.sim.centers[1], 100)
         self.assertEqual(self.sim.centers[2], 100)
         self.assertEqual(self.sim.num_waiting_list, 10)
+
+    def test_count_full_centers(self):
+
+        self.sim.centers = {1: 100, 2: 100, 3: 50}
+        self.sim.count_full_centers()
+        self.assertEqual(self.sim.num_full_centres, 2)
+
+        self.sim.centers = {1: 0, 2: 0, 3: 50}
+        self.sim.count_full_centers()
+        self.assertEqual(self.sim.num_full_centres, 0)
+
+        self.sim.centers = {1: 100, 2: 100, 3: 100}
+        self.sim.count_full_centers()
+        self.assertEqual(self.sim.num_full_centres, 3)
+
+        self.sim.centers = {1: 100, 2: 100, 3: 50, 4: 30, 5: 100}
+        self.sim.count_full_centers()
+        self.assertEqual(self.sim.num_full_centres, 3)

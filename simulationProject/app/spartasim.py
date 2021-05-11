@@ -6,7 +6,7 @@ import csv
 class SpartaSimulation:
 
     def __init__(self, months_to_simulate=12, centre_size=100, min_hired_trainees=20, max_hired_trainees=30):
-        self.month = months_to_simulate
+        self.month = months_to_simulate + 1
         self.current_month = 1
         self.num_open_centres = 1
         self.num_full_centres = 0
