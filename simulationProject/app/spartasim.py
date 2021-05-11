@@ -10,7 +10,7 @@ class SpartaSimulation:
         self.current_month = 1
         self.num_open_centres = 1
         self.num_full_centres = 0
-        self.num_current_trainees = 0
+        self.num_monthly_trainees = 0
         self.num_waiting_list = 0
         self.centers = {1: 0}
         self.centre_max_capacity = centre_size
@@ -23,7 +23,8 @@ class SpartaSimulation:
         self.current_month += 1
 
     def trainee_generator(self):
-        self.num_current_trainees = random.randint(self.min_trainees, self.max_trainees)
+        self.num_monthly_trainees = random.randint(self.min_trainees, self.max_trainees)
+
 
     def get_num_open_centres(self):
         return self.num_open_centres
@@ -32,7 +33,7 @@ class SpartaSimulation:
         return self.num_full_centres
 
     def get_num_current_trainees(self):
-        return self.num_current_trainees
+        return self.trainees_in_training
 
     def get_num_waiting_list(self):
         return self.num_waiting_list
@@ -63,7 +64,7 @@ class SpartaSimulation:
         self.centers.update({new_center_id: 0})
 
     def assign_trainees_to_center(self):
-        self.num_waiting_list += self.num_current_trainees
+        self.num_waiting_list += self.num_monthly_trainees
         for key in self.centers.keys():
             trainees = min(self.centre_max_capacity - self.centers[key], self.num_waiting_list)
             self.centers[key] += trainees
