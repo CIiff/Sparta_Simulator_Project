@@ -48,4 +48,9 @@ class SpartaSimulation:
                 self.add_new_center()
             self.trainee_generator()
             self.assign_trainees_to_center()
+            self.count_full_centers()
             self.month_inc()
+
+    def count_full_centers(self):
+        # Checks for each center if they're at max capacity yet.
+        self.num_full_centres = sum(value == self.centre_max_capacity for value in self.centers.values())
