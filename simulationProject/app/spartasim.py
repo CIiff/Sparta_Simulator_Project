@@ -1,4 +1,6 @@
 import random
+import matplotlib.pyplot as plt
+import csv
 
 
 class SpartaSimulation:
@@ -32,6 +34,26 @@ class SpartaSimulation:
         return self.num_waiting_list
 
     def add_new_center(self):
+        newcenter_id = len(self.centers.keys()) + 1
+        self.centers.update({newcenter_id: 0})
+
+    def plot_location_distributions(self):
+        fig, ax = plt.subplots()
+        ax.set_xlabel('Centre number')
+        ax.set_ylabel('Trainees in centre')
+        # add legend - wait for new init parameter to keep count of total trainees
+        for i in sorted(self.centers.keys()):
+            ax.bar(i, self.centers[i])
+        ax.bar('waiting list', self.num_waiting_list, color='r')
+        fig.savefig('filled_centres_bar.pdf')
+
+    def csv_write(self, csv_file_name):
+        with open(csv_file_name, 'w') as out_csv:
+            fieldnames = ['trainee location', 'number of trainees']
+            writer = csv.DictWriter(out_csv, fieldnames=fieldnames)
+            for i in sorted(self.centers.keys()):
+                writer.writerow({'Centre '+str(i): self.centers[i]})
+            writer.writerow({'waiting list': self.num_waiting_list})
         new_center_id = len(self.centers.keys()) + 1
         self.centers.update({new_center_id: 0})
 
