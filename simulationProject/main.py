@@ -9,7 +9,7 @@ months = int(config.get('INPUT', 'months'))
 print(f"This simulation is running for {months} months")
 
 SpartaSimulation_object = SpartaSimulation(months)
-
+SpartaSimulation_object.plot_location_distributions()
 
 print("Number of current trainees enrolled : " + str(SpartaSimulation_object.get_num_current_trainees()))
 
