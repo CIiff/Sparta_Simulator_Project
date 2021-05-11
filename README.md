@@ -1,16 +1,17 @@
 # Sparta Simulator Project
 
-This project is a package that allows users to Simulate The Growth of Sparta Global Academy<br>
+This project is a Python package that allows users to simulate the growth of the Sparta Global Academy.<br>
 
-The App will prompt the user to input the number of months they would like to simulate for and <br>
-and output the following:
+The App will prompt the user to input the number of months they would like to simulate for and output the following:<br>
 
 <ol>
-<li>number of open centres </li> 
-<li>number of full centres </li> 
-<li>number of trainees currently training </li> 
-<li>number of trainees on the waiting list </li> 
+<li>Number of open centres </li> 
+<li>Number of full centres </li> 
+<li>Number of trainees currently training </li> 
+<li>Number of trainees on the waiting list </li> 
 </ol>
+
+End users can enter the number of months they would like the simulator to run for in the 'config' file. They should then run the simulator through the 'main' file.
 
 
 ## Prerequisites

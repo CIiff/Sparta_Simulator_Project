@@ -6,5 +6,17 @@ config = configparser.ConfigParser()
 config.read('config.ini')
 months = config.get('INPUT', 'months')
 
-print(months)
+print("This simulation is running for " + months + " months")
+
+
+SpartaSimulation_object = SpartaSimulation(months)
+
+
+print("Number of current trainees enrolled : " + str(SpartaSimulation_object.get_num_current_trainees()))
+
+print("Number of open centres : " + str(SpartaSimulation_object.get_num_open_centres()))
+
+print("Number of trainees in the waiting list : " + str(SpartaSimulation_object.get_num_waiting_list()))
+
+print("Number of full centers : " + str(SpartaSimulation_object.get_num_full_centres()))
 
