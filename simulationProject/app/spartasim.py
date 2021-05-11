@@ -5,22 +5,25 @@ import csv
 
 class SpartaSimulation:
 
-    def __init__(self, month):
-        self.month = month
+    def __init__(self, months_to_simulate=12, centre_size=100, min_hired_trainees=20, max_hired_trainees=30):
+        self.month = months_to_simulate
         self.current_month = 1
         self.num_open_centres = 1
         self.num_full_centres = 0
         self.num_current_trainees = 0
         self.num_waiting_list = 0
         self.centers = {1: 0}
-        self.centre_max_capacity = 100
+        self.centre_max_capacity = centre_size
         self.trainees_in_training = 0
+        self.min_trainees = min_hired_trainees
+        self.max_trainees = max_hired_trainees
+        self.simulation_loop()
 
     def month_inc(self):
         self.current_month += 1
 
     def trainee_generator(self):
-        self.num_current_trainees = random.randint(20, 30)
+        self.num_current_trainees = random.randint(self.min_trainees, self.max_trainees)
 
     def get_num_open_centres(self):
         return self.num_open_centres
@@ -35,9 +38,9 @@ class SpartaSimulation:
         return self.num_waiting_list
 
     def add_new_center(self):
-        newcenter_id = len(self.centers.keys()) + 1
+        new_center_id = len(self.centers.keys()) + 1
         self.num_open_centres += 1
-        self.centers.update({newcenter_id: 0})
+        self.centers.update({new_center_id: 0})
 
     def plot_location_distributions(self):
         fig, ax = plt.subplots()
