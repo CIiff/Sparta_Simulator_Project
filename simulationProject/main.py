@@ -4,10 +4,9 @@ import configparser
 # Read local `config.ini` file.
 config = configparser.ConfigParser()
 config.read('config.ini')
-months = config.get('INPUT', 'months')
+months = int(config.get('INPUT', 'months'))
 
-print("This simulation is running for " + months + " months")
-
+print(f"This simulation is running for {months} months")
 
 SpartaSimulation_object = SpartaSimulation(months)
 
