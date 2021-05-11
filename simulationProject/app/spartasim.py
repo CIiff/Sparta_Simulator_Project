@@ -14,6 +14,7 @@ class SpartaSimulation:
         self.num_waiting_list = 0
         self.centers = {1: 0}
         self.centre_max_capacity = 100
+        self.trainees_in_training = 0
 
     def month_inc(self):
         self.current_month += 1
@@ -35,6 +36,7 @@ class SpartaSimulation:
 
     def add_new_center(self):
         newcenter_id = len(self.centers.keys()) + 1
+        self.num_open_centres += 1
         self.centers.update({newcenter_id: 0})
 
     def plot_location_distributions(self):
@@ -62,6 +64,7 @@ class SpartaSimulation:
         for key in self.centers.keys():
             trainees = min(self.centre_max_capacity - self.centers[key], self.num_waiting_list)
             self.centers[key] += trainees
+            self.trainees_in_training += trainees
             self.num_waiting_list -= trainees
 
     def simulation_loop(self):
