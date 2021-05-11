@@ -25,6 +25,7 @@ class SpartaSimulation:
     def trainee_generator(self):
         self.num_monthly_trainees = random.randint(self.min_trainees, self.max_trainees)
 
+
     def get_num_open_centres(self):
         return self.num_open_centres
 
