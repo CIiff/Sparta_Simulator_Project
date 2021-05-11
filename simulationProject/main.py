@@ -18,4 +18,3 @@ print("Number of open centres : " + str(SpartaSimulation_object.get_num_open_cen
 print("Number of trainees in the waiting list : " + str(SpartaSimulation_object.get_num_waiting_list()))
 
 print("Number of full centers : " + str(SpartaSimulation_object.get_num_full_centres()))
-

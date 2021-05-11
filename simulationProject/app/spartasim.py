@@ -6,6 +6,7 @@ import csv
 class SpartaSimulation:
 
     def __init__(self, months_to_simulate=12, centre_size=100, min_hired_trainees=20, max_hired_trainees=30):
+
         self.month = months_to_simulate + 1
         self.current_month = 1
         self.num_open_centres = 1
@@ -71,7 +72,7 @@ class SpartaSimulation:
             self.num_waiting_list -= trainees
 
     def simulation_loop(self):
-        while self.current_month <= self.month:
+        while self.current_month <= self.stopping_month:
             if self.current_month % 2 == 1 and self.current_month != 1:
                 self.add_new_center()
             self.trainee_generator()
