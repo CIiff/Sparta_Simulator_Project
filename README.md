@@ -11,7 +11,7 @@ The App will prompt the user to input the number of months they would like to si
 <li>Number of trainees on the waiting list </li> 
 </ol>
 
-End users can enter the number of months they would like the simulator to run for in the 'config' file. They should then run the simulator through the 'main' file.
+End users can enter the number of months they would like the simulator to run for in the 'config.ini' file. They should then run the simulator through the 'main.py' file.
 
 
 ## Prerequisites
@@ -20,6 +20,7 @@ Before you continue, ensure you have met the following requirements:
 
 - You have installed the latest version of Python.
 - You have installed the pandas package.
+- You have installed the matplotlib package.
 
 ## Contributors
 
