@@ -8,18 +8,9 @@ months = int(config.get('INPUT', 'months'))
 min_new_monthly_trainees = float(config.get('INPUT', 'min_new_trainees_per_month'))
 max_new_monthly_trainees = float(config.get('INPUT', 'max_new_trainees_per_month'))
 
-new_train_mean = (min_new_monthly_trainees + max_new_monthly_trainees)/2.0
-new_train_stdev = (new_train_mean - min_new_monthly_trainees)/3.0
-N = 100
-
-samples = stats.truncnorm.rvs(
-          (min_new_monthly_trainees-new_train_mean)/new_train_stdev,
-          (max_new_monthly_trainees-new_train_mean)/new_train_stdev,
-          loc=new_train_mean, scale=new_train_stdev, size=months)
-print(samples)
 print(f"This simulation is running for {months} months")
 
-SpartaSimulation_object = SpartaSimulation(months)
+SpartaSimulation_object = SpartaSimulation(months, min_new_monthly_trainees, max_new_monthly_trainees)
 SpartaSimulation_object.plot_location_distributions()
 
 print("Number of current trainees enrolled : " + str(SpartaSimulation_object.get_num_current_trainees()))
