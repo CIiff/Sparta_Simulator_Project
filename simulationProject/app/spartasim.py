@@ -2,6 +2,7 @@ import random
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
+from collections import Counter
 import csv
 
 class SpartaSimulation:
@@ -13,8 +14,9 @@ class SpartaSimulation:
         self.min_trainees = min_hired_trainees
         self.max_trainees = max_hired_trainees
         self.centres_df = pd.DataFrame(columns=['Centre type', 'Trainee count', 'Max capacity','Low att month counter', 'Centre course type','Centre status'])
-        self.centre_types = {'Boot camp': 0, 'Hub': 0, 'Tech': {'Java':0,'C#':0,'Data':0,'DevOps':0,'Business':0}}
-        self.available_centre_types = ['Boot camp', 'Hub', 'Tech Java']
+        #self.centre_types = {'Boot camp': 0, 'Hub': 0, 'Tech': {'Java':0,'C#':0,'Data':0,'DevOps':0,'Business':0}}
+        self.available_centre_types = ['Boot camp', 'Hub', 'Tech centre']
+        self.available_tech_centre_types = ['Java','C#','Data','DevOps','Business']
         self.create_centre()
         #self.simulation_loop()
 
@@ -25,15 +27,50 @@ class SpartaSimulation:
         self.monthly_generated_trainees = random.randint(self.min_trainees, self.max_trainees)
 
     def create_centre(self):
-        tech_centre_type = random.choice(['Java', 'C#', 'Data', 'DevOps', 'Business'])
+        self.count_centres()
+        chosen_centre_type = random.choice(self.available_centre_types)
+        tech_centre_type = random.choice(self.available_tech_centre_types)
 
-        hub_template = {'Centre type':'Hub', 'Trainee count':0, 'Max capacity':100, 'Low att month counter':0, 'Centre course type':'N/A', 'Centre status':'open'}
-        #boot_camp_template = pd.DataFrame(pd.Series({'Centre type': 'Boot camp', 'Trainee count': 0, 'Max capacity': 500,'Low att month counter':0, 'Centre course type':'N/A', 'Centre status': 'open'}))
-        tech_centre_template = pd.DataFrame({'Centre type': 'Tech centre', 'Trainee count': 0, 'Max capacity': 200,'Low att month counter':0, 'Centre course type':f'{tech_centre_type}', 'Centre status': 'open'})
-        self.centres_df.append(hub_template,ignore_index=True)
+        hub_template = [{'Centre type': 'Hub', 'Trainee count': 0, 'Max capacity': 100, 'Low att month counter': 0,'Centre course type': 'None', 'Centre status': 'open'}]
+        boot_camp_template = [{'Centre type': 'Boot camp', 'Trainee count': 0, 'Max capacity': 500, 'Low att month counter': 0,'Centre course type': 'None', 'Centre status': 'open'}]
+        tech_centre_template = [{'Centre type': 'Tech centre', 'Trainee count': 0, 'Max capacity': 200, 'Low att month counter': 0,'Centre course type': f'{tech_centre_type}', 'Centre status': 'open'}]
+
+        if chosen_centre_type == 'Hub':
+            self.centres_df = self.centres_df.append(hub_template, ignore_index=True)
+        if chosen_centre_type == 'Boot camp':
+            self.centres_df = self.centres_df.append(boot_camp_template, ignore_index=True)
+        if chosen_centre_type == 'Tech centre':
+            self.centres_df = self.centres_df.append(tech_centre_template, ignore_index=True)
+
 
     def count_centres(self):
-        [centres_df['Centre type'] for element in self.centres_df]
+        hub_template = {'Centre type': 'Hub', 'Trainee count': 0, 'Max capacity': 100, 'Low att month counter': 0,'Centre course type': 'None', 'Centre status': 'open'}
+        boot_camp_template = {'Centre type': 'Boot camp', 'Trainee count': 0, 'Max capacity': 500,'Low att month counter': 0, 'Centre course type': 'None', 'Centre status': 'open'}
+        tech_centre_template_Java = {'Centre type': 'Tech centre', 'Trainee count': 0, 'Max capacity': 200,'Low att month counter': 0, 'Centre course type': 'Java', 'Centre status': 'open'}
+        tech_centre_template_Business = {'Centre type': 'Tech centre', 'Trainee count': 0, 'Max capacity': 200,'Low att month counter': 0, 'Centre course type': 'Business','Centre status': 'open'}
+        tech_centre_template_Data = {'Centre type': 'Tech centre', 'Trainee count': 0, 'Max capacity': 200,'Low att month counter': 0, 'Centre course type': 'Data', 'Centre status': 'open'}
+        rows = [hub_template, boot_camp_template, hub_template, boot_camp_template, tech_centre_template_Java,tech_centre_template_Business, tech_centre_template_Data]
+
+        df = pd.DataFrame(columns=['Centre type', 'Trainee count', 'Max capacity', 'Low att month counter', 'Centre course type','Centre status'])
+        df = df.append(rows, ignore_index=True)
+
+        counted_tech_centre_types = dict(Counter(df['Centre course type']))
+        for k, v in counted_tech_centre_types.items():
+            if v >= 1:
+                self.available_tech_centre_types.remove(k)
+
+        counted_centre_types = dict(Counter(df['Centre type']))
+        if counted_centre_types['Hub'] >= 3:
+            self.available_centre_types.remove('Hub')
+        #functionality to add back onto list
+        #if 'hub' not in list and counted hubs < 3:
+            #add 'hub' back to list
+        if counted_centre_types['Boot camp'] >= 2:
+            self.available_centre_types.remove('Boot camp')
+        if available_tech_centre_types == []:
+            self.available_centre_types.remove('Tech centre')
+
+        print(self.available_centre_types, self.available_tech_centre_types)
 
     def assign_trainees_to_center(self):
         pass
@@ -46,4 +83,3 @@ class SpartaSimulation:
             self.month_inc()
 
 a = SpartaSimulation()
-print(a.centres_df)
