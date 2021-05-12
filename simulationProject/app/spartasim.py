@@ -3,6 +3,7 @@ import numpy as np
 from collections import Counter
 import pandas as pd
 import scipy.stats as stats
+import logging
 
 
 class SpartaSimulation:
@@ -111,5 +112,60 @@ class SpartaSimulation:
             self.centres_df["Trainee count"] -= 1
         return self.trainee_df
 
+    def print_centre_information(self):
+        if self.current_month == self.stopping_month:
+            log_type = 20
+        else:
+            log_type = 10
 
-a = SpartaSimulation()
+        logging.log(log_type, f"Centre Information for month {self.current_month}:")
+
+        centre_status = ["Open", "Full", "Closed"]
+        for status in centre_status:
+            total = self.centres_df.loc[self.centres_df['Centre status'] == status].count()[0]
+            bootcamp = self.centres_df.loc[
+                (self.centres_df['Centre status'] == status) & (self.centres_df['Centre type'] == 'Boot camp')].count()[
+                0]
+            hub = self.centres_df.loc[
+                (self.centres_df['Centre status'] == status) & (self.centres_df['Centre type'] == 'Hub')].count()[0]
+            tech_centre = self.centres_df.loc[(self.centres_df['Centre status'] == status) & (
+                        self.centres_df['Centre type'] == 'Tech centre')].count()[0]
+
+            logging.log(log_type, f"Number of Centres which are {status.lower()}: {total}")
+            logging.log(log_type, f"    Boot camps   : {bootcamp}")
+            logging.log(log_type, f"    Hubs         : {hub}")
+            logging.log(log_type, f"    Tech Centres : {tech_centre}\n")
+
+        logging.log(log_type, f"\n")
+
+    def print_trainee_information(self):
+        if self.current_month == self.stopping_month:
+            log_type = 20
+        else:
+            log_type = 10
+
+        logging.log(log_type, f"Trainee Information for month {self.current_month}:")
+
+        status_list = ["Waiting", "Training", "Benched"]
+        for status in status_list:
+
+            total = self.trainee_df.loc[self.trainee_df['Status'] == status].count()[0]
+            data = self.trainee_df.loc[
+                (self.trainee_df['Status'] == status) & (self.trainee_df['Course type'] == "Data")].count()[0]
+            devops = self.trainee_df.loc[
+                (self.trainee_df['Status'] == status) & (self.trainee_df['Course type'] == "DevOps")].count()[0]
+            java = self.trainee_df.loc[
+                (self.trainee_df['Status'] == status) & (self.trainee_df['Course type'] == "Java")].count()[0]
+            c_sharp = self.trainee_df.loc[
+                (self.trainee_df['Status'] == status) & (self.trainee_df['Course type'] == "C#")].count()[0]
+            business = self.trainee_df.loc[
+                (self.trainee_df['Status'] == status) & (self.trainee_df['Course type'] == "Business")].count()[0]
+
+            logging.log(log_type, f"Number of trainees which are {status.lower()}: {total}")
+            logging.log(log_type, f"    Data     : {data}")
+            logging.log(log_type, f"    DevOps   : {devops}")
+            logging.log(log_type, f"    Java     : {java}")
+            logging.log(log_type, f"    C#       : {c_sharp}")
+            logging.log(log_type, f"    Business : {business}\n")
+
+        logging.log(log_type, f"\n")
