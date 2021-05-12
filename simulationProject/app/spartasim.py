@@ -7,6 +7,7 @@ import csv
 import pandas as pd
 import scipy.stats as stats
 
+
 class SpartaSimulation:
 
     def __init__(self, months_to_simulate, min_hired_trainees, max_hired_trainees, centre_size=100):
@@ -28,7 +29,6 @@ class SpartaSimulation:
         self.current_month += 1
 
     def trainee_generator(self):
-
         new_train_mean = (self.min_trainees + self.max_trainees)/2.0
         new_train_stdev = (new_train_mean - self.min_trainees)/3.0
         num_new_trainees = float(stats.truncnorm.rvs(
@@ -80,7 +80,7 @@ class SpartaSimulation:
             #add 'hub' back to list
         if counted_centre_types['Boot camp'] >= 2:
             self.available_centre_types.remove('Boot camp')
-        if available_tech_centre_types == []:
+        if self.available_tech_centre_types == []:
             self.available_centre_types.remove('Tech centre')
 
         print(self.available_centre_types, self.available_tech_centre_types)
