@@ -102,5 +102,12 @@ class SpartaSimulation:
                         "Start month": 0, "Stop month": 0, "Status": "Waiting"}
             self.trainee_df = self.trainee_df.append(row_data, ignore_index=True)
 
-a = SpartaSimulation()
+    def complete_trainees(self):
+        self.assign_trainee_to_course()
+        for index in self.trainee_df.loc[self.trainee_df["Stop month"] == self.current_month].index:
+            self.trainee_df.loc[index, "Assigned centre ID"] = "None"
+            self.trainee_df.loc[index, "Status"] = "Benched"
+            self.centres_df["Trainee count"] -= 1
+        return self.trainee_df
 
+a = SpartaSimulation()
