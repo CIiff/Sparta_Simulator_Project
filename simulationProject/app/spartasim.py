@@ -79,19 +79,9 @@ class SpartaSimulation:
         # Checks for each center if they're at max capacity yet.
         self.num_full_centres = sum(value == self.centre_max_capacity for value in self.centers.values())
 
-# Trainee data frame
-# index trainee id
-# assigned centre id, course type, start month, stop month, status (benched/training/waiting)
-
-# self.trainee_df = pd.DataFrame(columns=["Assigned centre ID", "Course type", "Start month", "Stop month",
-#                                                 "Status"])
     def assign_trainee_to_course(self):
-        num_new_trainees =
-        for trainee in self.centers.values():
-            row_data = {}
-            row_data["Course type"] = random.choice(self.courses)
-            row_data["Assigned centre ID"] = "None"
-            row_data["Start month"] = 0
-            row_data["Stop month"] = 0
-            row_data["Status"] = "Waiting"
+        num_new_trainees = self.trainee_generator()
+        for trainee in range(num_new_trainees):
+            row_data = {"Course type": random.choice(self.courses), "Assigned centre ID": "None",
+                        "Start month": 0, "Stop month": 0, "Status": "Waiting"}
             self.trainee_df = self.trainee_df.append(row_data, ignore_index=True)
