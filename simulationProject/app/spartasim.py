@@ -69,16 +69,7 @@ class SpartaSimulation:
             ax.text(index, (value + 2), str(value), ha='center', va='center')
 
         fig.savefig('filled_centres_bar.pdf')
-
-    def csv_write(self, csv_file_name):
-        with open(csv_file_name, 'w') as out_csv:
-            fieldnames = ['trainee location', 'number of trainees']
-            writer = csv.DictWriter(out_csv, fieldnames=fieldnames)
-            for i in sorted(self.centers.keys()):
-                writer.writerow({'Centre '+str(i): self.centers[i]})
-            writer.writerow({'waiting list': self.num_waiting_list})
-        new_center_id = len(self.centers.keys()) + 1
-        self.centers.update({new_center_id: 0})
+    
 
     def assign_trainees_to_center(self):
         self.num_waiting_list += self.num_monthly_trainees
