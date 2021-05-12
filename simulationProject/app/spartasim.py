@@ -1,11 +1,9 @@
 import random
-import pandas as pd
 import numpy as np
-import matplotlib.pyplot as plt
 from collections import Counter
-import csv
 import pandas as pd
 import scipy.stats as stats
+
 
 class SpartaSimulation:
 
@@ -15,15 +13,16 @@ class SpartaSimulation:
         self.num_waiting_list = 0
         self.min_trainees = min_hired_trainees
         self.max_trainees = max_hired_trainees
-        self.trainee_df = pd.DataFrame(columns=["Assigned centre ID", "Course type", "Start month", "Stop month","Status"])
+        self.trainee_df = pd.DataFrame(columns=["Assigned centre ID", "Course type", "Start month", "Stop month",
+                                                "Status"])
         self.courses = ["Data", "DevOps", "C#", "Java", "Business"]
         self.status_list = ["Waiting", "Training", "Benched"]
-        self.centres_df = pd.DataFrame(columns=['Centre type', 'Trainee count', 'Max capacity','Low att month counter', 'Centre course type','Centre status'])
-        #self.centre_types = {'Boot camp': 0, 'Hub': 0, 'Tech': {'Java':0,'C#':0,'Data':0,'DevOps':0,'Business':0}}
+        self.centres_df = pd.DataFrame(columns=['Centre type', 'Trainee count', 'Max capacity', 'Low att month counter',
+                                                'Centre course type', 'Centre status'])
+        # self.centre_types = {'Boot camp': 0, 'Hub': 0, 'Tech': {'Java':0,'C#':0,'Data':0,'DevOps':0,'Business':0}}
         self.available_centre_types = ['Boot camp', 'Hub', 'Tech centre']
-        self.available_tech_centre_types = ['Java','C#','Data','DevOps','Business']
-        #self.simulation_loop()
-
+        self.available_tech_centre_types = ['Java', 'C#', 'Data', 'DevOps', 'Business']
+        # self.simulation_loop()
 
     def month_inc(self):
         self.current_month += 1
@@ -38,16 +37,20 @@ class SpartaSimulation:
                   loc=new_train_mean, scale=new_train_stdev, size=1))
         return round(num_new_trainees)
 
-        self.monthly_generated_trainees = random.randint(self.min_trainees, self.max_trainees)
+        # self.monthly_generated_trainees = random.randint(self.min_trainees, self.max_trainees)
 
     def create_centre(self):
         self.count_centres()
         chosen_centre_type = random.choice(self.available_centre_types)
         tech_centre_type = random.choice(self.available_tech_centre_types)
 
-        hub_template = [{'Centre type': 'Hub', 'Trainee count': 0, 'Max capacity': 100, 'Low att month counter': 0,'Centre course type': 'None', 'Centre status': 'open'}]
-        boot_camp_template = [{'Centre type': 'Boot camp', 'Trainee count': 0, 'Max capacity': 500, 'Low att month counter': 0,'Centre course type': 'None', 'Centre status': 'open'}]
-        tech_centre_template = [{'Centre type': 'Tech centre', 'Trainee count': 0, 'Max capacity': 200, 'Low att month counter': 0,'Centre course type': f'{tech_centre_type}', 'Centre status': 'open'}]
+        hub_template = [{'Centre type': 'Hub', 'Trainee count': 0, 'Max capacity': 100, 'Low att month counter': 0,
+                         'Centre course type': 'None', 'Centre status': 'open'}]
+        boot_camp_template = [{'Centre type': 'Boot camp', 'Trainee count': 0, 'Max capacity': 500,
+                               'Low att month counter': 0, 'Centre course type': 'None', 'Centre status': 'open'}]
+        tech_centre_template = [{'Centre type': 'Tech centre', 'Trainee count': 0, 'Max capacity': 200,
+                                 'Low att month counter': 0, 'Centre course type': f'{tech_centre_type}',
+                                 'Centre status': 'open'}]
 
         if chosen_centre_type == 'Hub':
             self.centres_df = self.centres_df.append(hub_template, ignore_index=True)
@@ -55,7 +58,6 @@ class SpartaSimulation:
             self.centres_df = self.centres_df.append(boot_camp_template, ignore_index=True)
         if chosen_centre_type == 'Tech centre':
             self.centres_df = self.centres_df.append(tech_centre_template, ignore_index=True)
-
 
     def count_centres(self):
         counted_tech_centre_types = dict(Counter(self.centres_df['Centre course type']))
@@ -73,7 +75,7 @@ class SpartaSimulation:
         if 'Hub' not in self.available_centre_types and counted_centre_types['Hub'] < 3:
             self.available_centre_types.append('Hub')
 
-        #pop boot camp from available centre types
+        # pop boot camp from available centre types
         if counted_centre_types['Boot camp'] >= 2:
             self.available_centre_types.remove('Boot camp')
         if 'Boot camp' not in self.available_centre_types and counted_centre_types['Boot camp'] < 2:
@@ -85,7 +87,7 @@ class SpartaSimulation:
         if not self.available_tech_centre_types == []:
             self.available_centre_types.append('Tech centre')
 
-        #prioritise filling centres with less than 25 and tech centres, the fill hub and boot camp
+        # prioritise filling centres with less than 25 and tech centres, the fill hub and boot camp
 
     def simulation_loop(self):
         while self.current_month <= self.stopping_month:
@@ -93,7 +95,6 @@ class SpartaSimulation:
                 self.add_new_center()
             self.trainee_generator()
             self.month_inc()
-
 
     def assign_trainee_to_course(self):
         num_new_trainees = self.trainee_generator()
@@ -109,5 +110,6 @@ class SpartaSimulation:
             self.trainee_df.loc[index, "Status"] = "Benched"
             self.centres_df["Trainee count"] -= 1
         return self.trainee_df
+
 
 a = SpartaSimulation()
