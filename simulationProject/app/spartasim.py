@@ -1,6 +1,7 @@
 import random
 import matplotlib.pyplot as plt
 import csv
+import pandas as pd
 
 
 class SpartaSimulation:
@@ -19,6 +20,10 @@ class SpartaSimulation:
         self.min_trainees = min_hired_trainees
         self.max_trainees = max_hired_trainees
         self.simulation_loop()
+        self.trainee_df = pd.DataFrame(columns=["Assigned centre ID", "Course type", "Start month", "Stop month",
+                                                "Status"])
+        self.courses = ["Data", "DevOps", "C#", "Java", "Business"]
+        self.status_list = ["Waiting", "Training", "Benched"]
 
     def month_inc(self):
         self.current_month += 1
@@ -43,32 +48,6 @@ class SpartaSimulation:
         self.num_open_centres += 1
         self.centers.update({new_center_id: 0})
 
-    def plot_location_distributions(self):
-        fig, ax = plt.subplots()
-        ax.set_xlabel('Centre number')
-        ax.set_ylabel('Trainees in centre')
-
-        num_trainee_labels = []
-        for i in sorted(self.centers.keys()):
-            ax.bar(str(i), self.centers[i])
-            num_trainee_labels.append(self.centers[i])
-        ax.bar('waiting list', self.num_waiting_list, color='r')
-        num_trainee_labels.append(self.num_waiting_list)
-        for index, value in enumerate(num_trainee_labels):
-            ax.text(index, (value + 2), str(value), ha='center', va='center')
-
-        fig.savefig('filled_centres_bar.pdf')
-
-    def csv_write(self, csv_file_name):
-        with open(csv_file_name, 'w') as out_csv:
-            fieldnames = ['trainee location', 'number of trainees']
-            writer = csv.DictWriter(out_csv, fieldnames=fieldnames)
-            for i in sorted(self.centers.keys()):
-                writer.writerow({'Centre '+str(i): self.centers[i]})
-            writer.writerow({'waiting list': self.num_waiting_list})
-        new_center_id = len(self.centers.keys()) + 1
-        self.centers.update({new_center_id: 0})
-
     def assign_trainees_to_center(self):
         self.num_waiting_list += self.num_monthly_trainees
         for key in self.centers.keys():
@@ -89,3 +68,20 @@ class SpartaSimulation:
     def count_full_centers(self):
         # Checks for each center if they're at max capacity yet.
         self.num_full_centres = sum(value == self.centre_max_capacity for value in self.centers.values())
+
+# Trainee data frame
+# index trainee id
+# assigned centre id, course type, start month, stop month, status (benched/training/waiting)
+
+# self.trainee_df = pd.DataFrame(columns=["Assigned centre ID", "Course type", "Start month", "Stop month",
+#                                                 "Status"])
+    def assign_trainee_to_course(self):
+        num_new_trainees =
+        for trainee in self.centers.values():
+            row_data = {}
+            row_data["Course type"] = random.choice(self.courses)
+            row_data["Assigned centre ID"] = "None"
+            row_data["Start month"] = 0
+            row_data["Stop month"] = 0
+            row_data["Status"] = "Waiting"
+            self.trainee_df = self.trainee_df.append(row_data, ignore_index=True)
