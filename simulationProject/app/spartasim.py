@@ -4,27 +4,40 @@ import numpy as np
 import matplotlib.pyplot as plt
 from collections import Counter
 import csv
+import pandas as pd
+import scipy.stats as stats
 
 class SpartaSimulation:
 
-    def __init__(self, months_to_simulate=12, min_hired_trainees=20, max_hired_trainees=30):
+    def __init__(self, months_to_simulate, min_hired_trainees, max_hired_trainees, centre_size=100):
         self.stopping_month = months_to_simulate + 1
         self.current_month = 1
         self.num_waiting_list = 0
         self.min_trainees = min_hired_trainees
         self.max_trainees = max_hired_trainees
+        self.trainee_df = pd.DataFrame(columns=["Assigned centre ID", "Course type", "Start month", "Stop month","Status"])
+        self.courses = ["Data", "DevOps", "C#", "Java", "Business"]
+        self.status_list = ["Waiting", "Training", "Benched"]
         self.centres_df = pd.DataFrame(columns=['Centre type', 'Trainee count', 'Max capacity','Low att month counter', 'Centre course type','Centre status'])
         #self.centre_types = {'Boot camp': 0, 'Hub': 0, 'Tech': {'Java':0,'C#':0,'Data':0,'DevOps':0,'Business':0}}
         self.available_centre_types = ['Boot camp', 'Hub', 'Tech centre']
         self.available_tech_centre_types = ['Java','C#','Data','DevOps','Business']
-        #self.create_centre()
-        self.count_centres()
         #self.simulation_loop()
+
 
     def month_inc(self):
         self.current_month += 1
 
     def trainee_generator(self):
+
+        new_train_mean = (self.min_trainees + self.max_trainees)/2.0
+        new_train_stdev = (new_train_mean - self.min_trainees)/3.0
+        num_new_trainees = float(stats.truncnorm.rvs(
+                  (self.min_trainees-new_train_mean)/new_train_stdev,
+                  (self.max_trainees-new_train_mean)/new_train_stdev,
+                  loc=new_train_mean, scale=new_train_stdev, size=1))
+        return round(num_new_trainees)
+
         self.monthly_generated_trainees = random.randint(self.min_trainees, self.max_trainees)
 
     def create_centre(self):
@@ -74,9 +87,6 @@ class SpartaSimulation:
 
         #prioritise filling centres with less than 25 and tech centres, the fill hub and boot camp
 
-    def assign_trainees_to_center(self):
-        pass
-
     def simulation_loop(self):
         while self.current_month <= self.stopping_month:
             if self.current_month % 2 == 1 and self.current_month != 1:
@@ -84,4 +94,13 @@ class SpartaSimulation:
             self.trainee_generator()
             self.month_inc()
 
+
+    def assign_trainee_to_course(self):
+        num_new_trainees = self.trainee_generator()
+        for trainee in range(num_new_trainees):
+            row_data = {"Course type": random.choice(self.courses), "Assigned centre ID": "None",
+                        "Start month": 0, "Stop month": 0, "Status": "Waiting"}
+            self.trainee_df = self.trainee_df.append(row_data, ignore_index=True)
+
 a = SpartaSimulation()
+
