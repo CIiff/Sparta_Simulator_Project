@@ -2,12 +2,14 @@ import random
 import matplotlib.pyplot as plt
 import csv
 import pandas as pd
+import scipy.stats as stats
 
 
 class SpartaSimulation:
 
-    def __init__(self, months_to_simulate=12, centre_size=100, min_hired_trainees=20, max_hired_trainees=30):
-
+    def __init__(self, months_to_simulate, min_hired_trainees, max_hired_trainees, centre_size=100):
+        self.course_types = ['Data', 'Java', 'C#', 'DevOps', 'Business']
+        self.centre_types = ['Boot Camp', 'Tech', 'Hub']
         self.stopping_month = months_to_simulate + 1
         self.current_month = 1
         self.num_open_centres = 1
@@ -24,12 +26,20 @@ class SpartaSimulation:
                                                 "Status"])
         self.courses = ["Data", "DevOps", "C#", "Java", "Business"]
         self.status_list = ["Waiting", "Training", "Benched"]
+        self.centres_df = pd.DataFrame(columns=['Centre type', 'Trainee count', 'Low att month counter',
+                                                'Centre course type', 'Max centre capacity', 'Centre status'])
 
     def month_inc(self):
         self.current_month += 1
 
     def trainee_generator(self):
-        self.num_monthly_trainees = random.randint(self.min_trainees, self.max_trainees)
+        new_train_mean = (self.min_trainees + self.max_trainees)/2.0
+        new_train_stdev = (new_train_mean - self.min_trainees)/3.0
+        num_new_trainees = float(stats.truncnorm.rvs(
+                  (self.min_trainees-new_train_mean)/new_train_stdev,
+                  (self.max_trainees-new_train_mean)/new_train_stdev,
+                  loc=new_train_mean, scale=new_train_stdev, size=1))
+        return round(num_new_trainees)
 
     def get_num_open_centres(self):
         return self.num_open_centres

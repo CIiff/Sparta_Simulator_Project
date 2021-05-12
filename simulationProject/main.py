@@ -5,10 +5,12 @@ import configparser
 config = configparser.ConfigParser()
 config.read('config.ini')
 months = int(config.get('INPUT', 'months'))
+min_new_monthly_trainees = float(config.get('INPUT', 'min_new_trainees_per_month'))
+max_new_monthly_trainees = float(config.get('INPUT', 'max_new_trainees_per_month'))
 
 print(f"This simulation is running for {months} months")
 
-SpartaSimulation_object = SpartaSimulation(months)
+SpartaSimulation_object = SpartaSimulation(months, min_new_monthly_trainees, max_new_monthly_trainees)
 SpartaSimulation_object.plot_location_distributions()
 
 print("Number of current trainees enrolled : " + str(SpartaSimulation_object.get_num_current_trainees()))
