@@ -60,7 +60,7 @@ class SpartaSimulation:
                 self.add_new_center()
             self.trainee_generator()
             self.assign_trainees_to_center()
-            self.count_full_centers()
+            #self.count_full_centers()
             self.month_inc()
 
     def assign_trainee_to_course(self):
@@ -69,3 +69,11 @@ class SpartaSimulation:
             row_data = {"Course type": random.choice(self.courses), "Assigned centre ID": "None",
                         "Start month": 0, "Stop month": 0, "Status": "Waiting"}
             self.trainee_df = self.trainee_df.append(row_data, ignore_index=True)
+
+    def complete_trainees(self):
+        self.assign_trainee_to_course()
+        for index in self.trainee_df.loc[self.trainee_df["Stop month"] == self.current_month].index:
+            self.trainee_df.loc[index, "Assigned centre ID"] = "None"
+            self.trainee_df.loc[index, "Status"] = "Benched"
+            self.centres_df["Trainee count"] -= 1
+        return self.trainee_df
