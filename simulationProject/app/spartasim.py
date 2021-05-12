@@ -1,91 +1,104 @@
 import random
+import pandas as pd
+import numpy as np
 import matplotlib.pyplot as plt
+from collections import Counter
 import csv
-
+import pandas as pd
+import scipy.stats as stats
 
 class SpartaSimulation:
 
-    def __init__(self, months_to_simulate=12, centre_size=100, min_hired_trainees=20, max_hired_trainees=30):
-
+    def __init__(self, months_to_simulate, min_hired_trainees, max_hired_trainees, centre_size=100):
         self.stopping_month = months_to_simulate + 1
         self.current_month = 1
-        self.num_open_centres = 1
-        self.num_full_centres = 0
-        self.num_monthly_trainees = 0
         self.num_waiting_list = 0
-        self.centers = {1: 0}
-        self.centre_max_capacity = centre_size
-        self.trainees_in_training = 0
         self.min_trainees = min_hired_trainees
         self.max_trainees = max_hired_trainees
+        self.trainee_df = pd.DataFrame(columns=["Assigned centre ID", "Course type", "Start month", "Stop month","Status"])
+        self.courses = ["Data", "DevOps", "C#", "Java", "Business"]
+        self.status_list = ["Waiting", "Training", "Benched"]
+        self.centres_df = pd.DataFrame(columns=['Centre type', 'Trainee count', 'Max capacity','Low att month counter', 'Centre course type','Centre status'])
+        #self.centre_types = {'Boot camp': 0, 'Hub': 0, 'Tech': {'Java':0,'C#':0,'Data':0,'DevOps':0,'Business':0}}
+        self.available_centre_types = ['Boot camp', 'Hub', 'Tech centre']
+        self.available_tech_centre_types = ['Java','C#','Data','DevOps','Business']
         self.simulation_loop()
 
     def month_inc(self):
         self.current_month += 1
 
     def trainee_generator(self):
-        self.num_monthly_trainees = random.randint(self.min_trainees, self.max_trainees)
 
-    def get_num_open_centres(self):
-        return self.num_open_centres
+        new_train_mean = (self.min_trainees + self.max_trainees)/2.0
+        new_train_stdev = (new_train_mean - self.min_trainees)/3.0
+        num_new_trainees = float(stats.truncnorm.rvs(
+                  (self.min_trainees-new_train_mean)/new_train_stdev,
+                  (self.max_trainees-new_train_mean)/new_train_stdev,
+                  loc=new_train_mean, scale=new_train_stdev, size=1))
+        return round(num_new_trainees)
 
-    def get_num_full_centres(self):
-        return self.num_full_centres
+        self.monthly_generated_trainees = random.randint(self.min_trainees, self.max_trainees)
 
-    def get_num_current_trainees(self):
-        return self.trainees_in_training
+    def create_centre(self):
+        self.count_centres()
+        chosen_centre_type = random.choice(self.available_centre_types)
+        tech_centre_type = random.choice(self.available_tech_centre_types)
 
-    def get_num_waiting_list(self):
-        return self.num_waiting_list
+        hub_template = [{'Centre type': 'Hub', 'Trainee count': 0, 'Max capacity': 100, 'Low att month counter': 0,'Centre course type': 'None', 'Centre status': 'open'}]
+        boot_camp_template = [{'Centre type': 'Boot camp', 'Trainee count': 0, 'Max capacity': 500, 'Low att month counter': 0,'Centre course type': 'None', 'Centre status': 'open'}]
+        tech_centre_template = [{'Centre type': 'Tech centre', 'Trainee count': 0, 'Max capacity': 200, 'Low att month counter': 0,'Centre course type': f'{tech_centre_type}', 'Centre status': 'open'}]
 
-    def add_new_center(self):
-        new_center_id = len(self.centers.keys()) + 1
-        self.num_open_centres += 1
-        self.centers.update({new_center_id: 0})
+        if chosen_centre_type == 'Hub':
+            self.centres_df = self.centres_df.append(hub_template, ignore_index=True)
+        if chosen_centre_type == 'Boot camp':
+            self.centres_df = self.centres_df.append(boot_camp_template, ignore_index=True)
+        if chosen_centre_type == 'Tech centre':
+            self.centres_df = self.centres_df.append(tech_centre_template, ignore_index=True)
 
-    def plot_location_distributions(self):
-        fig, ax = plt.subplots()
-        ax.set_xlabel('Centre number')
-        ax.set_ylabel('Trainees in centre')
 
-        num_trainee_labels = []
-        for i in sorted(self.centers.keys()):
-            ax.bar(str(i), self.centers[i])
-            num_trainee_labels.append(self.centers[i])
-        ax.bar('waiting list', self.num_waiting_list, color='r')
-        num_trainee_labels.append(self.num_waiting_list)
-        for index, value in enumerate(num_trainee_labels):
-            ax.text(index, (value + 2), str(value), ha='center', va='center')
+    def count_centres(self):
+        hub_template = {'Centre type': 'Hub', 'Trainee count': 0, 'Max capacity': 100, 'Low att month counter': 0,'Centre course type': 'None', 'Centre status': 'open'}
+        boot_camp_template = {'Centre type': 'Boot camp', 'Trainee count': 0, 'Max capacity': 500,'Low att month counter': 0, 'Centre course type': 'None', 'Centre status': 'open'}
+        tech_centre_template_Java = {'Centre type': 'Tech centre', 'Trainee count': 0, 'Max capacity': 200,'Low att month counter': 0, 'Centre course type': 'Java', 'Centre status': 'open'}
+        tech_centre_template_Business = {'Centre type': 'Tech centre', 'Trainee count': 0, 'Max capacity': 200,'Low att month counter': 0, 'Centre course type': 'Business','Centre status': 'open'}
+        tech_centre_template_Data = {'Centre type': 'Tech centre', 'Trainee count': 0, 'Max capacity': 200,'Low att month counter': 0, 'Centre course type': 'Data', 'Centre status': 'open'}
+        rows = [hub_template, boot_camp_template, hub_template, boot_camp_template, tech_centre_template_Java,tech_centre_template_Business, tech_centre_template_Data]
 
-        fig.savefig('filled_centres_bar.pdf')
+        df = pd.DataFrame(columns=['Centre type', 'Trainee count', 'Max capacity', 'Low att month counter', 'Centre course type','Centre status'])
+        df = df.append(rows, ignore_index=True)
 
-    def csv_write(self, csv_file_name):
-        with open(csv_file_name, 'w') as out_csv:
-            fieldnames = ['trainee location', 'number of trainees']
-            writer = csv.DictWriter(out_csv, fieldnames=fieldnames)
-            for i in sorted(self.centers.keys()):
-                writer.writerow({'Centre '+str(i): self.centers[i]})
-            writer.writerow({'waiting list': self.num_waiting_list})
-        new_center_id = len(self.centers.keys()) + 1
-        self.centers.update({new_center_id: 0})
+        counted_tech_centre_types = dict(Counter(df['Centre course type']))
+        for k, v in counted_tech_centre_types.items():
+            if v >= 1:
+                self.available_tech_centre_types.remove(k)
 
-    def assign_trainees_to_center(self):
-        self.num_waiting_list += self.num_monthly_trainees
-        for key in self.centers.keys():
-            trainees = min(self.centre_max_capacity - self.centers[key], self.num_waiting_list)
-            self.centers[key] += trainees
-            self.trainees_in_training += trainees
-            self.num_waiting_list -= trainees
+        counted_centre_types = dict(Counter(df['Centre type']))
+        if counted_centre_types['Hub'] >= 3:
+            self.available_centre_types.remove('Hub')
+        #functionality to add back onto list
+        #if 'hub' not in list and counted hubs < 3:
+            #add 'hub' back to list
+        if counted_centre_types['Boot camp'] >= 2:
+            self.available_centre_types.remove('Boot camp')
+        if available_tech_centre_types == []:
+            self.available_centre_types.remove('Tech centre')
+
+        print(self.available_centre_types, self.available_tech_centre_types)
 
     def simulation_loop(self):
         while self.current_month <= self.stopping_month:
             if self.current_month % 2 == 1 and self.current_month != 1:
                 self.add_new_center()
             self.trainee_generator()
-            self.assign_trainees_to_center()
-            self.count_full_centers()
             self.month_inc()
 
-    def count_full_centers(self):
-        # Checks for each center if they're at max capacity yet.
-        self.num_full_centres = sum(value == self.centre_max_capacity for value in self.centers.values())
+
+    def assign_trainee_to_course(self):
+        num_new_trainees = self.trainee_generator()
+        for trainee in range(num_new_trainees):
+            row_data = {"Course type": random.choice(self.courses), "Assigned centre ID": "None",
+                        "Start month": 0, "Stop month": 0, "Status": "Waiting"}
+            self.trainee_df = self.trainee_df.append(row_data, ignore_index=True)
+
+a = SpartaSimulation()
+
