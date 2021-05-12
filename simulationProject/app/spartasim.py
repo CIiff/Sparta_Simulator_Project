@@ -1,12 +1,14 @@
 import random
 import matplotlib.pyplot as plt
 import csv
+import pandas as pd
 
 
 class SpartaSimulation:
 
     def __init__(self, months_to_simulate=12, centre_size=100, min_hired_trainees=20, max_hired_trainees=30):
-
+        self.course_types = ['Data', 'Java', 'C#', 'DevOps', 'Business']
+        self.centre_types = ['Boot Camp', 'Tech', 'Hub']
         self.stopping_month = months_to_simulate + 1
         self.current_month = 1
         self.num_open_centres = 1
@@ -19,6 +21,8 @@ class SpartaSimulation:
         self.min_trainees = min_hired_trainees
         self.max_trainees = max_hired_trainees
         self.simulation_loop()
+        self.centres_df = pd.DataFrame(columns=['Centre type', 'Trainee count', 'Low att month counter',
+                                                'Centre course type', 'Max centre capacity', 'Centre status'])
 
     def month_inc(self):
         self.current_month += 1
