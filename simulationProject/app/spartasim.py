@@ -25,9 +25,7 @@ class SpartaSimulation:
                                                       'Happy? (T/F)'])
         # self.centre_types = {'Boot camp': 0, 'Hub': 0, 'Tech': {'Java':0,'C#':0,'Data':0,'DevOps':0,'Business':0}}
         self.available_centre_types = ['Boot camp', 'Hub', 'Tech centre']
-        self.available_tech_centre_types = [
-            'Java', 'C#', 'Data', 'DevOps', 'Business']
-        # self.simulation_loop()
+        self.new_simulation_loop()
 
     def month_inc(self):
         self.current_month += 1
@@ -98,7 +96,7 @@ class SpartaSimulation:
         if 'Boot camp' not in self.available_centre_types and bootcamp < 2:
             self.available_centre_types.append('Boot camp')
 
-    def initialize_client_order(self):
+    def add_new_client_order(self):
         if self.current_month >= 13:
             # variables below apply for returning AND new clients
             client_course = random.choice(self.courses)
@@ -115,7 +113,7 @@ class SpartaSimulation:
             # append new_order to the dataframe
             self.client_orders_df.append(new_order, ignore_index=True)
 
-    def add_repeat_clients(self):
+    def add_repeat_client_order(self):
         happy_client_index_list = self.client_orders_df.index[self.client_orders_df['Happy? (T/F)']].tolist()
         # if DF empty, should be no happy clients
         for happy_index in happy_client_index_list:
@@ -133,7 +131,7 @@ class SpartaSimulation:
                                         'Spartans obtained': 0, 'Happy? (T/F)': True}
                 self.client_orders_df.append(old_client_new_order, ignore_index=True)
 
-    def end_of_order_resolution(self):
+    def end_of_client_order_resolve(self):
         # END-OF-ORDER CODE
         fulfilled_index_list = self.client_orders_df.index[self.client_orders_df['Spartans requested'] ==
                                                            self.client_orders_df['Spartans obtained']].tolist()
@@ -162,13 +160,14 @@ class SpartaSimulation:
             self.trainee_df = self.trainee_df.append(
                 row_data, ignore_index=True)
 
-    def complete_trainees(self):
+    def graduating_trainees(self):
+        # checks that if trainees are due to graduate, reassigns centre to 'none' and status to 'benched'
         self.assign_trainee_to_course()
         for index in self.trainee_df.loc[self.trainee_df["Stop month"] == self.current_month].index:
+            x = self.trainee_df.loc[index, "Assigned centre ID"]
             self.trainee_df.loc[index, "Assigned centre ID"] = "None"
             self.trainee_df.loc[index, "Status"] = "Benched"
-            self.centres_df["Trainee count"] -= 1
-        return self.trainee_df
+            self.centres_df.loc[x, ["Trainee count"]] -= 1
 
     def close_centre(self):
 
@@ -185,7 +184,7 @@ class SpartaSimulation:
                         self.trainee_df.loc[trainee]['Start month'] = 0
                         self.trainee_df.loc[trainee]['Stop month'] = 0
                         self.trainee_df.loc[trainee]['Status'] = 'Waiting'
-                        self.trainee_df.loc[trainee]['Assigned centre ID'] = 0
+                        self.trainee_df.loc[trainee]['Assigned centre ID'] = 'None'
 
             if self.centres_df.loc[centreID]['Trainee count'] < 25 and self.centres_df.loc[centreID]['Centre status'] == 'Open':
                 self.centres_df.loc[centreID]['Low att month counter'] += 1
@@ -267,3 +266,22 @@ class SpartaSimulation:
             logging.log(log_type, f"    Business : {business}\n")
 
         logging.log(log_type, f"\n")
+
+
+    def new_simulation_loop(self):
+        while self.current_month <= self.stopping_month:
+            if self.current_month % 2 == 1:
+                self.create_centre()
+            self.trainee_generator()
+            self.graduating_trainees()
+            self.assign_trainee_to_course()
+            # assign trainee to centre method
+            # close centres method
+            # client methods
+            self.add_new_client_order()
+            self.add_repeat_client_order()
+            self.end_of_client_order_resolve()
+            # end of client methods
+            self.print_centre_information()
+            self.print_trainee_information()
+            self.month_inc()
