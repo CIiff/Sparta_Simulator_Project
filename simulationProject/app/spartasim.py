@@ -164,12 +164,6 @@ class SpartaSimulation:
 
         logging.log(log_type, f"\n")
 
-# AS A user
-# I WANT the looping method that considers the newest requirements
-# SO THAT the simulation runs with newest specifications
-# centre creation, generate trainees, assign trainees to centre, trainees graduate, close centres, print centre summary,
-# print trainee summary
-
     def new_simulation_loop(self):
         while self.current_month <= self.stopping_month:
             if self.current_month % 2 == 1:
