@@ -65,7 +65,7 @@ class SpartaSimulation:
         elif chosen_centre_type == 'Tech centre':
             self.centres_df = self.centres_df.append(tech_centre_template, ignore_index=True)
 
-        self.centre_debug_prints(chosen_centre_type)
+        #self.centre_debug_prints(chosen_centre_type)
 
     def count_centres(self):
         bootcamp = self.centres_df.loc[
@@ -90,8 +90,6 @@ class SpartaSimulation:
         if 'Boot camp' not in self.available_centre_types and bootcamp < 2:
             self.available_centre_types.append('Boot camp')
 
-        #prioritise filling centres with less than 25 and tech centres, the fill hub and boot camp
-
     def centre_debug_prints(self, chosen_centre_type):
         print('MONTH:', self.current_month, '/ ', self.available_centre_types)
         print('CHOSEN: ', chosen_centre_type)
@@ -112,6 +110,9 @@ class SpartaSimulation:
                         "Stop month": 0, "Status": "Waiting"}
             self.trainee_df = self.trainee_df.append(
                 row_data, ignore_index=True)
+
+    def assign_trainee_to_centre(self):
+        self.centres_df[]
 
     def graduating_trainees(self):
         # checks that if trainees are due to graduate, reassigns centre to 'none' and status to 'benched'
