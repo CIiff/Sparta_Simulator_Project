@@ -30,7 +30,6 @@ class SpartaSimulation:
         self.current_month += 1
 
     def trainee_generator(self):
-
         new_train_mean = (self.min_trainees + self.max_trainees)/2.0
         new_train_stdev = (new_train_mean - self.min_trainees)/3.0
         num_new_trainees = float(stats.truncnorm.rvs(
@@ -39,61 +38,62 @@ class SpartaSimulation:
             loc=new_train_mean, scale=new_train_stdev, size=1))
         return round(num_new_trainees)
 
-        # self.monthly_generated_trainees = random.randint(self.min_trainees, self.max_trainees)
+    def assign_trainees_to_center(self):
+        self.num_waiting_list += self.num_monthly_trainees
+        for key in self.centers.keys():
+            trainees = min(self.centre_max_capacity -
+                           self.centers[key], self.num_waiting_list)
+            self.centers[key] += trainees
+            self.trainees_in_training += trainees
+            self.num_waiting_list -= trainees
+        self.monthly_generated_trainees = random.randint(
+            self.min_trainees, self.max_trainees)
 
     def create_centre(self):
         self.count_centres()
         chosen_centre_type = random.choice(self.available_centre_types)
         tech_centre_type = random.choice(self.available_tech_centre_types)
 
-        hub_template = [{'Centre type': 'Hub', 'Trainee count': 0, 'Max capacity': 100, 'Low att month counter': 0,
-                         'Centre course type': 'None', 'Centre status': 'open'}]
+        hub_template = [{'Centre type': 'Hub', 'Trainee count': 0, 'Max capacity': 100,
+                         'Low att month counter': 0, 'Centre course type': 'None', 'Centre status': 'Open'}]
         boot_camp_template = [{'Centre type': 'Boot camp', 'Trainee count': 0, 'Max capacity': 500,
-                               'Low att month counter': 0, 'Centre course type': 'None', 'Centre status': 'open'}]
+                               'Low att month counter': 0, 'Centre course type': 'None', 'Centre status': 'Open'}]
         tech_centre_template = [{'Centre type': 'Tech centre', 'Trainee count': 0, 'Max capacity': 200,
-                                 'Low att month counter': 0, 'Centre course type': f'{tech_centre_type}',
-                                 'Centre status': 'open'}]
+                                 'Low att month counter': 0, 'Centre course type': f'{tech_centre_type}', 'Centre status': 'Open'}]
 
         if chosen_centre_type == 'Hub':
             self.centres_df = self.centres_df.append(
                 hub_template, ignore_index=True)
-        if chosen_centre_type == 'Boot camp':
+        elif chosen_centre_type == 'Boot camp':
             self.centres_df = self.centres_df.append(
                 boot_camp_template, ignore_index=True)
-        if chosen_centre_type == 'Tech centre':
+        elif chosen_centre_type == 'Tech centre':
             self.centres_df = self.centres_df.append(
                 tech_centre_template, ignore_index=True)
 
+        self.centre_debug_prints(chosen_centre_type)
+
     def count_centres(self):
-        counted_tech_centre_types = dict(
-            Counter(self.centres_df['Centre course type']))
-        print(counted_tech_centre_types.items())
-
-        for k, v in counted_tech_centre_types.items():
-            if k in self.available_tech_centre_types and v >= 1:
-                self.available_tech_centre_types.remove(k)
-
-        counted_centre_types = dict(Counter(self.centres_df['Centre type']))
+        bootcamp = self.centres_df.loc[
+            (self.centres_df['Centre status'] == "Open") &
+            (self.centres_df['Centre type'] == 'Boot camp')].count()[0]
+        hub = self.centres_df.loc[
+            (self.centres_df['Centre status'] == "Open") &
+            (self.centres_df['Centre type'] == 'Hub')].count()[0]
 
         # pop hub from available centre types
-        if counted_centre_types['Hub'] >= 3:
-            self.available_centre_types.remove('Hub')
-        if 'Hub' not in self.available_centre_types and counted_centre_types['Hub'] < 3:
+        if 'Hub' in self.available_centre_types:
+            if hub >= 3:
+                self.available_centre_types.remove('Hub')
+        if 'Hub' not in self.available_centre_types and hub < 3:
             self.available_centre_types.append('Hub')
 
         # pop boot camp from available centre types
-        if counted_centre_types['Boot camp'] >= 2:
-            self.available_centre_types.remove('Boot camp')
-        if 'Boot camp' not in self.available_centre_types and counted_centre_types['Boot camp'] < 2:
+        if 'Boot camp' in self.available_centre_types:
+            if bootcamp >= 2:
+                self.available_centre_types.remove('Boot camp')
+        if 'Boot camp' not in self.available_centre_types and bootcamp < 2:
             self.available_centre_types.append('Boot camp')
-
-        # pop tech centre from available centre types
-        if self.available_tech_centre_types == []:
-            self.available_centre_types.remove('Tech centre')
-        if not self.available_tech_centre_types == []:
-            self.available_centre_types.append('Tech centre')
-
-        # prioritise filling centres with less than 25 and tech centres, the fill hub and boot camp
 
     def simulation_loop(self):
         while self.current_month <= self.stopping_month:
@@ -190,7 +190,7 @@ class SpartaSimulation:
         logging.log(
             log_type, f"Trainee Information for month {self.current_month}:")
 
-        status_list = ["Waiting", "Training", "Benched"]
+        status_list = ["Waiting", "Training", "Benched", "Working"]
         for status in status_list:
 
             total = self.trainee_df.loc[self.trainee_df['Status'] == status].count()[
