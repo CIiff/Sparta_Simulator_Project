@@ -134,7 +134,7 @@ class SpartaSimulation:
                         self.trainee_df.loc[trainee]['Start month'] = 0
                         self.trainee_df.loc[trainee]['Stop month'] = 0
                         self.trainee_df.loc[trainee]['Status'] = 'Waiting'
-                        self.trainee_df.loc[trainee]['Assigned centre ID'] = 0
+                        self.trainee_df.loc[trainee]['Assigned centre ID'] = 'None'
 
             if self.centres_df.loc[centreID]['Trainee count'] < 25 and self.centres_df.loc[centreID]['Centre status'] == 'Open':
                 self.centres_df.loc[centreID]['Low att month counter'] += 1
