@@ -100,8 +100,8 @@ class SpartaSimulation:
     def assign_trainee_to_course(self):
         num_new_trainees = self.trainee_generator()
         for trainee in range(num_new_trainees):
-            row_data = {"Course type": random.choice(self.courses), "Assigned centre ID": "None",
-                        "Start month": 0, "Stop month": 0, "Status": "Waiting"}
+            row_data = {"Assigned centre ID": "None", "Course type": random.choice(self.courses), "Start month": 0,
+                        "Stop month": 0, "Status": "Waiting"}
             self.trainee_df = self.trainee_df.append(row_data, ignore_index=True)
 
     def complete_trainees(self):
