@@ -37,7 +37,38 @@ class SpartaSimulation:
         return round(num_new_trainees)
 
     def assign_trainees_to_center(self):
-        pass
+        fillable_centres = self.centres_df[
+            (self.centres_df['Trainee count'] < self.centres_df['Max capacity']) &
+            (self.centres_df['Centre status'] == 'Open')]
+
+        for centre_index, centre_row in fillable_centres.iterrows():
+            spaces = centre_row['Max capacity'] - centre_row['Trainee count']
+            if centre_row['Centre type'] == 'Hub' or centre_row['Centre type'] == 'Boot camp':
+                for i in range(spaces):
+                    if self.trainee_df.loc[self.trainee_df['Status'] == 'Waiting'].count()[0] == 0:
+                        break
+                    else:
+                        trainee = self.trainee_df[self.trainee_df['Status'] == 'Waiting'].index.to_list()[0]
+                        self.trainee_df.loc[trainee, ['Assigned centre ID']] = centre_index
+                        self.trainee_df.loc[trainee, ['Status']] = 'Training'
+                        self.trainee_df.loc[trainee, ["Start month"]] = self.current_month
+                        self.trainee_df.loc[trainee, ["Stop month"]] = self.current_month + 12
+                        self.centres_df.loc[centre_index, ['Trainee count']] += 1
+
+            elif centre_row['Centre type'] == 'Tech centre':
+                for i in range(spaces):
+                    if self.trainee_df.loc[(self.trainee_df['Status'] == 'Waiting') & (
+                            self.trainee_df['Course type'] == centre_row['Centre course type'])].count()[0] == 0:
+                        break
+                    else:
+                        trainee = self.trainee_df[(self.trainee_df['Status'] == 'Waiting') &
+                                                  (self.trainee_df['Course type'] == centre_row[
+                                                      'Centre course type'])].index.to_list()[0]
+                        self.trainee_df.loc[trainee, ['Assigned centre ID']] = centre_index
+                        self.trainee_df.loc[trainee, ['Status']] = 'Training'
+                        self.trainee_df.loc[trainee, ["Start month"]] = self.current_month
+                        self.trainee_df.loc[trainee, ["Stop month"]] = self.current_month + 12
+                        self.centres_df.loc[centre_index, ['Trainee count']] += 1
 
     def create_centre(self):
         self.count_centres()
@@ -88,16 +119,16 @@ class SpartaSimulation:
                 new_client_id = 1
             else:
                 new_client_id = int(max(self.client_orders_df['Client ID']) + 1)
-            new_order = {'Client ID': new_client_id,
+            new_order = {'Client ID': 1,
                          'Month advert placed': self.current_month, 'Month advert removed': self.current_month + 12,
                          'Course requested': client_course, 'Spartans requested': spartans_needed_rand,
-                         'Spartans obtained': 0, 'Happy? (T/F)': True}
+                         'Spartans obtained': 0, 'Happy? (T/F)': "Neutral"}
 
             # append new_order to the dataframe
-            self.client_orders_df.append(new_order, ignore_index=True)
+            self.client_orders_df = self.client_orders_df.append(new_order, ignore_index=True)
 
     def add_repeat_client_order(self):
-        happy_client_index_list = self.client_orders_df.index[self.client_orders_df['Happy? (T/F)']].tolist()
+        happy_client_index_list = self.client_orders_df.index[self.client_orders_df['Happy? (T/F)'] == "Happy"].tolist()
         # if DF empty, should be no happy clients
         for happy_index in happy_client_index_list:
             # get row info for each index with a 'happy' client - so unhappy clients never place new orders.
@@ -111,22 +142,39 @@ class SpartaSimulation:
                                         'Month advert placed': self.current_month,
                                         'Month advert removed': self.current_month + 12,
                                         'Course requested': client_course, 'Spartans requested': spartans_needed_rand,
-                                        'Spartans obtained': 0, 'Happy? (T/F)': True}
-                self.client_orders_df.append(old_client_new_order, ignore_index=True)
+                                        'Spartans obtained': 0, 'Happy? (T/F)': "Neutral"}
+                self.client_orders_df = self.client_orders_df.append(old_client_new_order, ignore_index=True)
 
     def end_of_client_order_resolve(self):
         # END-OF-ORDER CODE
-        fulfilled_index_list = self.client_orders_df.index[self.client_orders_df['Spartans requested'] ==
-                                                           self.client_orders_df['Spartans obtained']].tolist()
-        time_up_index_list = self.client_orders_df.index[self.current_month ==
-                                                         self.client_orders_df['Month advert removed']].tolist()
+        # fulfilled_index_list = []
+        # time_up_index_list = []
+        # for i, row in self.client_orders_df.iterrows():
+        #     if int(row['Spartans requested']) == int(row['Spartans obtained']):
+        #         fulfilled_index_list.append(i)
+        #     elif int(self.current_month) == int(row['Month advert removed']):
+        #         time_up_index_list.append(i)
+
+        #fulfilled_index_list =list( self.client_orders_df.loc[(self.client_orders_df['Spartans requested']) ==self.client_orders_df['Spartans obtained']].index)
+        #fulfilled_index_list = self.client_orders_df.index[self.client_orders_df['Spartans requested'] ==
+           #                                                self.client_orders_df['Spartans obtained']].tolist()
+
+        #time_up_index_list = list(self.client_orders_df.loc[self.current_month ==
+        #                                                 self.client_orders_df['Month advert removed']] )
+        # time_up_index_list = self.client_orders_df.index[self.current_month ==
+        #                                                  self.client_orders_df['Month advert removed']].tolist()
         for index, i_row in self.client_orders_df.iterrows():  # i = index, i_row = all row info at index i
             # if successful: right part of 'and' statement prevents assignments for old orders in DF
-            if (index in fulfilled_index_list) and (self.current_month <= i_row['Month advert removed']):
+            print(self.current_month)
+            print(i_row)
+            if (int(i_row['Spartans requested']) == int(i_row['Spartans obtained'])) and (int(self.current_month) <= int(i_row['Month advert removed'])):
+                print("Yes")
                 i_row['Month advert removed'] = self.current_month
+                i_row['Happy? (T/F)'] = "Happy"
             # else: not enough spartans recruited
-            elif index in time_up_index_list:
-                i_row['Happy? (T/F)'] = False
+            elif int(self.current_month) == int(i_row['Month advert removed']):
+                print("No")
+                i_row['Happy? (T/F)'] = "Unhappy"
 
     def assign_new_trainees_to_data_frame(self):
         num_new_trainees = self.trainee_generator()
@@ -256,14 +304,15 @@ class SpartaSimulation:
 
             self.assign_new_trainees_to_data_frame()
 
-            # assign trainee to centre method
+            self.assign_trainees_to_center()
+            self.update_full_center_status()
 
             self.close_centre()
 
             self.add_new_client_order()
             self.add_repeat_client_order()
+            self.orders_index_priority_and_assign()
             self.end_of_client_order_resolve()
-            # Change student status
 
             self.print_centre_information()
             self.print_trainee_information()
@@ -272,5 +321,32 @@ class SpartaSimulation:
 
     def update_full_center_status(self):
         for center in self.centres_df.loc[self.centres_df["Centre status"] == "Open"].index:
-            if self.centres_df.loc[center, ["Trainee count"]] == self.centres_df.loc[center, ["Max capacity"]]:
+            if int(self.centres_df.loc[center, ["Trainee count"]]) == int(
+                    self.centres_df.loc[center, ["Max capacity"]]):
                 self.centres_df.loc[center, ["Centre status"]] = "Full"
+
+    def orders_index_priority_and_assign(self):
+        # rank the orders by earliest (lowest index) to latest (highest index)
+        # should be done automatically via autoincrement in client_orders_df
+        order_index_list = self.client_orders_df.index.to_list()
+        for i in order_index_list:
+            # order_assign_grads changes client_orders_df: no need for return
+            self.order_assign_grads(i)
+
+    def order_assign_grads(self, order_index):
+        # use order_index to assign trainee graduates to clients
+        # order_row = the client order's row in client_orders_df
+        order_row = self.client_orders_df.iloc[order_index]
+        client_course = order_row['Course requested']
+        # Get trainees whose course matches the client order's need
+        wanted_trainees_index_list = self.trainee_df[(self.trainee_df["Course type"] == client_course) &
+                                                     (self.trainee_df["Status"] == "Benched")].index.to_list()
+        for wanted_trainee_index in wanted_trainees_index_list:
+            perm_trainee_record = self.trainee_df.iloc[wanted_trainee_index]
+            if int(self.client_orders_df.loc[order_index, ['Spartans requested']]) > int(self.client_orders_df.loc[order_index, ['Spartans obtained']]):
+                # assign trainee to the order
+                self.client_orders_df.loc[order_index, ['Spartans obtained']] += 1
+                #order_row['Spartans obtained'] += 1
+                # Once trainee has been assigned, change the trainee's status in the (permanent) self.trainee_df
+                self.trainee_df.loc[wanted_trainee_index, ["Status"]] = "Working"
+                #perm_trainee_record["Status"] = "Working"
