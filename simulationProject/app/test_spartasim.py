@@ -31,23 +31,27 @@ class SpartaSimulationTests(unittest.TestCase):
         self.assertEqual(sum(value != 0 for value in self.sim.trainee_df["Stop month"]), 0)
         self.assertEqual(sum(value != "Waiting" for value in self.sim.trainee_df["Status"]), 0)
 
-    def test_create_center(self):
+    def test_create_centre(self):
 
         self.sim.create_centre()
 
-        self.assertEqual(sum(value not in self.sim.available_centre_types for value in self.sim.trainee_df["Centre type"]), 0)
-        self.assertEqual(sum(value != 0 for value in self.sim.trainee_df["Trainee count"]), 0)
-        self.assertEqual(sum(value != 0 for value in self.sim.trainee_df["Low att month counter"]), 0)
-        self.assertEqual(sum(value != 0 for value in self.sim.trainee_df["Centre status"]), 0)
+        self.assertEqual(sum(value not in self.sim.available_centre_types for value in self.sim.centres_df["Centre type"]), 0)
+        self.assertEqual(sum(value != 0 for value in self.sim.centres_df["Trainee count"]), 0)
+        self.assertEqual(sum(value != 0 for value in self.sim.centres_df["Low att month counter"]), 0)
+        self.assertEqual(sum(value != "open" for value in self.sim.centres_df["Centre status"]), 0)
 
-        # for i in range(0, len(self.sim.trainee_df)):
-        #     pass
-        #
-        # self.assertEqual(sum(value != "Hub" for value in self.sim.trainee_df["Status"]), 0)
-        # self.assertEqual(sum(value != "Boot camp" for value in self.sim.trainee_df["Status"]), 0)
-        # self.assertEqual(sum(value != "Tech Centre" for value in self.sim.trainee_df["Status"]), 0)
+        for value in range(0, len(self.sim.centres_df)):
+            if self.sim.centres_df["Centre type"][value] == "Hub":
+                self.assertEqual(self.sim.centres_df["Max capacity"][value], 100)
+                self.assertEqual(self.sim.centres_df["Centre course type"][value], "None")
 
-        pass
+            if self.sim.centres_df["Centre type"][value] == "Boot camp":
+                self.assertEqual(self.sim.centres_df["Max capacity"][value], 500)
+                self.assertEqual(self.sim.centres_df["Centre course type"][value], "None")
+
+            if self.sim.centres_df["Centre type"][value] == "Tech centre":
+                self.assertEqual(self.sim.centres_df["Max capacity"][value], 200)
+                self.assertEqual(sum(value not in self.sim.available_tech_centre_types for value in self.sim.centres_df["Centre course type"]),0)
 
     # # tests get functions:
     # def test_get_num_open_centres(self):
