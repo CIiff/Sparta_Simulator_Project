@@ -22,7 +22,8 @@ class SpartaSimulation:
                                                 'Centre course type', 'Centre status'])
         # self.centre_types = {'Boot camp': 0, 'Hub': 0, 'Tech': {'Java':0,'C#':0,'Data':0,'DevOps':0,'Business':0}}
         self.available_centre_types = ['Boot camp', 'Hub', 'Tech centre']
-        self.available_tech_centre_types = ['Java', 'C#', 'Data', 'DevOps', 'Business']
+        self.available_tech_centre_types = [
+            'Java', 'C#', 'Data', 'DevOps', 'Business']
         # self.simulation_loop()
 
     def month_inc(self):
@@ -33,9 +34,9 @@ class SpartaSimulation:
         new_train_mean = (self.min_trainees + self.max_trainees)/2.0
         new_train_stdev = (new_train_mean - self.min_trainees)/3.0
         num_new_trainees = float(stats.truncnorm.rvs(
-                  (self.min_trainees-new_train_mean)/new_train_stdev,
-                  (self.max_trainees-new_train_mean)/new_train_stdev,
-                  loc=new_train_mean, scale=new_train_stdev, size=1))
+            (self.min_trainees-new_train_mean)/new_train_stdev,
+            (self.max_trainees-new_train_mean)/new_train_stdev,
+            loc=new_train_mean, scale=new_train_stdev, size=1))
         return round(num_new_trainees)
 
         # self.monthly_generated_trainees = random.randint(self.min_trainees, self.max_trainees)
@@ -54,14 +55,18 @@ class SpartaSimulation:
                                  'Centre status': 'open'}]
 
         if chosen_centre_type == 'Hub':
-            self.centres_df = self.centres_df.append(hub_template, ignore_index=True)
+            self.centres_df = self.centres_df.append(
+                hub_template, ignore_index=True)
         if chosen_centre_type == 'Boot camp':
-            self.centres_df = self.centres_df.append(boot_camp_template, ignore_index=True)
+            self.centres_df = self.centres_df.append(
+                boot_camp_template, ignore_index=True)
         if chosen_centre_type == 'Tech centre':
-            self.centres_df = self.centres_df.append(tech_centre_template, ignore_index=True)
+            self.centres_df = self.centres_df.append(
+                tech_centre_template, ignore_index=True)
 
     def count_centres(self):
-        counted_tech_centre_types = dict(Counter(self.centres_df['Centre course type']))
+        counted_tech_centre_types = dict(
+            Counter(self.centres_df['Centre course type']))
         print(counted_tech_centre_types.items())
 
         for k, v in counted_tech_centre_types.items():
@@ -102,7 +107,8 @@ class SpartaSimulation:
         for trainee in range(num_new_trainees):
             row_data = {"Assigned centre ID": "None", "Course type": random.choice(self.courses), "Start month": 0,
                         "Stop month": 0, "Status": "Waiting"}
-            self.trainee_df = self.trainee_df.append(row_data, ignore_index=True)
+            self.trainee_df = self.trainee_df.append(
+                row_data, ignore_index=True)
 
     def complete_trainees(self):
         self.assign_trainee_to_course()
@@ -112,26 +118,63 @@ class SpartaSimulation:
             self.centres_df["Trainee count"] -= 1
         return self.trainee_df
 
+    def close_centre(self):
+
+        def update_centre():
+            self.centres_df.loc[centreID]['Centre status'] = 'Closed'
+            self.centres_df.loc[centreID]['Trainee count'] = 0
+
+        for centreID in self.centres_df.index:
+
+            def update_trainee():
+                for trainee in self.trainee_df.index:
+                    if self.trainee_df.loc[trainee]['CentreID_FK'] == centreID:
+
+                        self.trainee_df.loc[trainee]['Start month'] = 0
+                        self.trainee_df.loc[trainee]['Stop month'] = 0
+                        self.trainee_df.loc[trainee]['Status'] = 'Waiting'
+                        self.trainee_df.loc[trainee]['Assigned centre ID'] = 0
+
+            if self.centres_df.loc[centreID]['Trainee count'] < 25 and self.centres_df.loc[centreID]['Centre status'] == 'Open':
+                self.centres_df.loc[centreID]['Low att month counter'] += 1
+            else:
+                self.centres_df.loc[centreID]['Low att month counter'] = 0
+
+            if self.centres_df.loc[centreID]['Centre_type'] == 'Boot camp' and self.centres_df.loc[centreID]['Low att month counter'] >= 3 and self.centres_df.loc[centreID]['Centre status'] == 'Open':
+                update_centre()
+                update_trainee()
+
+            elif self.centres_df.loc[centreID]['Centre_type'] == 'Hub' and self.centres_df.loc[centreID]['Low att month counter'] >= 1 and self.centres_df.loc[centreID]['Centre status'] == 'Open':
+                update_centre()
+                update_trainee()
+
+            elif self.centres_df.loc[centreID]['Centre_type'] == 'Tech centre' and self.centres_df.loc[centreID]['Low att month counter'] >= 1 and self.centres_df.loc[centreID]['Centre status'] == 'Open':
+                update_centre()
+                update_trainee()
+
     def print_centre_information(self):
         if self.current_month == self.stopping_month:
             log_type = 20
         else:
             log_type = 10
 
-        logging.log(log_type, f"Centre Information for month {self.current_month}:")
+        logging.log(
+            log_type, f"Centre Information for month {self.current_month}:")
 
         centre_status = ["Open", "Full", "Closed"]
         for status in centre_status:
-            total = self.centres_df.loc[self.centres_df['Centre status'] == status].count()[0]
+            total = self.centres_df.loc[self.centres_df['Centre status'] == status].count()[
+                0]
             bootcamp = self.centres_df.loc[
                 (self.centres_df['Centre status'] == status) & (self.centres_df['Centre type'] == 'Boot camp')].count()[
                 0]
             hub = self.centres_df.loc[
                 (self.centres_df['Centre status'] == status) & (self.centres_df['Centre type'] == 'Hub')].count()[0]
             tech_centre = self.centres_df.loc[(self.centres_df['Centre status'] == status) & (
-                        self.centres_df['Centre type'] == 'Tech centre')].count()[0]
+                self.centres_df['Centre type'] == 'Tech centre')].count()[0]
 
-            logging.log(log_type, f"Number of Centres which are {status.lower()}: {total}")
+            logging.log(
+                log_type, f"Number of Centres which are {status.lower()}: {total}")
             logging.log(log_type, f"    Boot camps   : {bootcamp}")
             logging.log(log_type, f"    Hubs         : {hub}")
             logging.log(log_type, f"    Tech Centres : {tech_centre}\n")
@@ -144,12 +187,14 @@ class SpartaSimulation:
         else:
             log_type = 10
 
-        logging.log(log_type, f"Trainee Information for month {self.current_month}:")
+        logging.log(
+            log_type, f"Trainee Information for month {self.current_month}:")
 
         status_list = ["Waiting", "Training", "Benched"]
         for status in status_list:
 
-            total = self.trainee_df.loc[self.trainee_df['Status'] == status].count()[0]
+            total = self.trainee_df.loc[self.trainee_df['Status'] == status].count()[
+                0]
             data = self.trainee_df.loc[
                 (self.trainee_df['Status'] == status) & (self.trainee_df['Course type'] == "Data")].count()[0]
             devops = self.trainee_df.loc[
@@ -161,7 +206,8 @@ class SpartaSimulation:
             business = self.trainee_df.loc[
                 (self.trainee_df['Status'] == status) & (self.trainee_df['Course type'] == "Business")].count()[0]
 
-            logging.log(log_type, f"Number of trainees which are {status.lower()}: {total}")
+            logging.log(
+                log_type, f"Number of trainees which are {status.lower()}: {total}")
             logging.log(log_type, f"    Data     : {data}")
             logging.log(log_type, f"    DevOps   : {devops}")
             logging.log(log_type, f"    Java     : {java}")
