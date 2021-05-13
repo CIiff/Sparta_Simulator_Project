@@ -47,4 +47,3 @@ Before you continue, ensure you have met the following requirements:
 </ul>
 
 **Version 1.0.0**
-
