@@ -20,7 +20,7 @@ def main(months, min_new_monthly_trainees, max_new_monthly_trainees, login_type)
 
     print(f"This simulation is running for {months} months")
     SpartaSimulation_object = SpartaSimulation(months, min_new_monthly_trainees, max_new_monthly_trainees)
-
+    print(SpartaSimulation_object.client_orders_df.to_string())
 
 if __name__ == '__main__':
     main(months, min_new_monthly_trainees, max_new_monthly_trainees, login_type)
