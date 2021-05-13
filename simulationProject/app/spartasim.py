@@ -7,6 +7,7 @@ import logging
 
 
 
+
 class SpartaSimulation:
 
     def __init__(self, months_to_simulate, min_hired_trainees, max_hired_trainees, centre_size=100):
@@ -38,7 +39,18 @@ class SpartaSimulation:
                   loc=new_train_mean, scale=new_train_stdev, size=1))
         return round(num_new_trainees)
 
+<<<<<<< HEAD
         # self.monthly_generated_trainees = random.randint(self.min_trainees, self.max_trainees)
+=======
+    def assign_trainees_to_center(self):
+        self.num_waiting_list += self.num_monthly_trainees
+        for key in self.centers.keys():
+            trainees = min(self.centre_max_capacity - self.centers[key], self.num_waiting_list)
+            self.centers[key] += trainees
+            self.trainees_in_training += trainees
+            self.num_waiting_list -= trainees
+        self.monthly_generated_trainees = random.randint(self.min_trainees, self.max_trainees)
+>>>>>>> alex
 
     def create_centre(self):
         self.count_centres()
@@ -79,11 +91,14 @@ class SpartaSimulation:
         # pop boot camp from available centre types
         if counted_centre_types['Boot camp'] >= 2:
             self.available_centre_types.remove('Boot camp')
+<<<<<<< HEAD
 
         if 'Boot camp' not in self.available_centre_types and counted_centre_types['Boot camp'] < 2:
             self.available_centre_types.append('Boot camp')
 
         # pop tech centre from available centre types
+=======
+>>>>>>> alex
         if self.available_tech_centre_types == []:
             self.available_centre_types.remove('Tech centre')
         if not self.available_tech_centre_types == []:
