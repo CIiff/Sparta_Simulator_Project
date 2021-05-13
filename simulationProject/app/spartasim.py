@@ -263,8 +263,14 @@ class SpartaSimulation:
             self.add_new_client_order()
             self.add_repeat_client_order()
             self.end_of_client_order_resolve()
+            # Change student status
 
             self.print_centre_information()
             self.print_trainee_information()
 
             self.month_inc()
+
+    def update_full_center_status(self):
+        for center in self.centres_df.loc[self.centres_df["Centre status"] == "Open"].index:
+            if self.centres_df.loc[center, ["Trainee count"]] == self.centres_df.loc[center, ["Max capacity"]]:
+                self.centres_df.loc[center, ["Centre status"]] = "Full"
