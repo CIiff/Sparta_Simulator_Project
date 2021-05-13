@@ -1,7 +1,4 @@
 import random
-import numpy as np
-from collections import Counter
-import csv
 from tabulate import tabulate
 import pandas as pd
 import scipy.stats as stats
@@ -11,7 +8,7 @@ import scipy
 
 class SpartaSimulation:
 
-    def __init__(self, months_to_simulate=120, min_hired_trainees=20, max_hired_trainees=30):
+    def __init__(self, months_to_simulate, min_hired_trainees, max_hired_trainees):
         self.stopping_month = months_to_simulate + 1
         self.current_month = 1
         self.num_waiting_list = 0
@@ -20,9 +17,12 @@ class SpartaSimulation:
         self.trainee_df = pd.DataFrame(columns=["Assigned centre ID", "Course type", "Start month", "Stop month","Status"])
         self.courses = ["Data", "DevOps", "C#", "Java", "Business"]
         self.status_list = ["Waiting", "Training", "Benched"]
-        self.centres_df = pd.DataFrame(columns=['Centre type', 'Trainee count', 'Max capacity','Low att month counter', 'Centre course type','Centre status'])
+        self.centres_df = pd.DataFrame(columns=['Centre type', 'Trainee count', 'Max capacity', 'Low att month counter',
+                                                'Centre course type', 'Centre status'])
+        self.client_orders_df = pd.DataFrame(columns=['Client ID', 'Month advert placed', 'Month advert removed',
+                                                      'Course requested', 'Spartans requested', 'Spartans obtained',
+                                                      'Happy? (T/F)'])
         self.available_centre_types = ['Boot camp', 'Hub', 'Tech centre']
-        self.simulation_loop()
         self.new_simulation_loop()
 
 
@@ -39,24 +39,21 @@ class SpartaSimulation:
         return round(num_new_trainees)
 
     def assign_trainees_to_center(self):
-        self.num_waiting_list += self.num_monthly_trainees
-        for key in self.centers.keys():
-            trainees = min(self.centre_max_capacity -
-                           self.centers[key], self.num_waiting_list)
-            self.centers[key] += trainees
-            self.trainees_in_training += trainees
-            self.num_waiting_list -= trainees
-        self.monthly_generated_trainees = random.randint(
-            self.min_trainees, self.max_trainees)
+        pass
 
     def create_centre(self):
         self.count_centres()
         chosen_centre_type = random.choice(self.available_centre_types)
         tech_centre_type = random.choice(self.courses)
 
-        hub_template = [{'Centre type': 'Hub', 'Trainee count': 0, 'Max capacity': 100, 'Low att month counter': 0,'Centre course type': 'None', 'Centre status': 'Open'}]
-        boot_camp_template = [{'Centre type': 'Boot camp', 'Trainee count': 0, 'Max capacity': 500, 'Low att month counter': 0,'Centre course type': 'None', 'Centre status': 'Open'}]
-        tech_centre_template = [{'Centre type': 'Tech centre', 'Trainee count': 0, 'Max capacity': 200, 'Low att month counter': 0,'Centre course type': f'{tech_centre_type}', 'Centre status': 'Open'}]
+
+        hub_template = [{'Centre type': 'Hub', 'Trainee count': 0, 'Max capacity': 100,
+                         'Low att month counter': 0, 'Centre course type': 'None', 'Centre status': 'Open'}]
+        boot_camp_template = [{'Centre type': 'Boot camp', 'Trainee count': 0, 'Max capacity': 500,
+                               'Low att month counter': 0, 'Centre course type': 'None', 'Centre status': 'Open'}]
+        tech_centre_template = [{'Centre type': 'Tech centre', 'Trainee count': 0, 'Max capacity': 200,
+                                 'Low att month counter': 0, 'Centre course type': f'{tech_centre_type}',
+                                 'Centre status': 'Open'}]
 
         if chosen_centre_type == 'Hub':
             self.centres_df = self.centres_df.append(hub_template, ignore_index=True)
@@ -90,6 +87,7 @@ class SpartaSimulation:
         if 'Boot camp' not in self.available_centre_types and bootcamp < 2:
             self.available_centre_types.append('Boot camp')
 
+#////////////////////////////////////////////////////////////////////////////////////////////////
     def centre_debug_prints(self, chosen_centre_type):
         print('MONTH:', self.current_month, '/ ', self.available_centre_types)
         print('CHOSEN: ', chosen_centre_type)
@@ -102,21 +100,69 @@ class SpartaSimulation:
                 self.create_centre()
             self.trainee_generator()
             self.month_inc()
+#REMOVE^
+#///////////////////////////////////////////////////////////////////////////////////
 
-    def assign_trainee_to_course(self):
+    def add_new_client_order(self):
+        if self.current_month >= 13:
+            # variables below apply for returning AND new clients
+            client_course = random.choice(self.courses)
+            spartans_needed_rand = random.choice(range(15, 51))
+            if len(self.client_orders_df) == 0:  # should only occur for first DF entry
+                new_client_id = 1
+            else:
+                new_client_id = int(max(self.client_orders_df['Client ID']) + 1)
+            new_order = {'Client ID': new_client_id,
+                         'Month advert placed': self.current_month, 'Month advert removed': self.current_month + 12,
+                         'Course requested': client_course, 'Spartans requested': spartans_needed_rand,
+                         'Spartans obtained': 0, 'Happy? (T/F)': True}
+
+            # append new_order to the dataframe
+            self.client_orders_df.append(new_order, ignore_index=True)
+
+    def add_repeat_client_order(self):
+        happy_client_index_list = self.client_orders_df.index[self.client_orders_df['Happy? (T/F)']].tolist()
+        # if DF empty, should be no happy clients
+        for happy_index in happy_client_index_list:
+            # get row info for each index with a 'happy' client - so unhappy clients never place new orders.
+            retrieval_row = self.client_orders_df.iloc[happy_index, :]
+            if retrieval_row['Month advert removed'] == (self.current_month - 12):
+                # only take new orders from existing happy clients 12 months after their previous order was
+                # successfully completed
+                client_course = random.choice(self.courses)
+                spartans_needed_rand = random.choice(range(15, 51))
+                old_client_new_order = {'Client ID': retrieval_row['Client ID'],
+                                        'Month advert placed': self.current_month,
+                                        'Month advert removed': self.current_month + 12,
+                                        'Course requested': client_course, 'Spartans requested': spartans_needed_rand,
+                                        'Spartans obtained': 0, 'Happy? (T/F)': True}
+                self.client_orders_df.append(old_client_new_order, ignore_index=True)
+
+    def end_of_client_order_resolve(self):
+        # END-OF-ORDER CODE
+        fulfilled_index_list = self.client_orders_df.index[self.client_orders_df['Spartans requested'] ==
+                                                           self.client_orders_df['Spartans obtained']].tolist()
+        time_up_index_list = self.client_orders_df.index[self.current_month ==
+                                                         self.client_orders_df['Month advert removed']].tolist()
+        for index, i_row in self.client_orders_df.iterrows():  # i = index, i_row = all row info at index i
+            # if successful: right part of 'and' statement prevents assignments for old orders in DF
+            if (index in fulfilled_index_list) and (self.current_month <= i_row['Month advert removed']):
+                i_row['Month advert removed'] = self.current_month
+            # else: not enough spartans recruited
+            elif index in time_up_index_list:
+                i_row['Happy? (T/F)'] = False
+
+    def assign_new_trainees_to_data_frame(self):
         num_new_trainees = self.trainee_generator()
         for trainee in range(num_new_trainees):
             row_data = {"Assigned centre ID": "None", "Course type": random.choice(self.courses), "Start month": 0,
                         "Stop month": 0, "Status": "Waiting"}
-            self.trainee_df = self.trainee_df.append(
-                row_data, ignore_index=True)
+            self.trainee_df = self.trainee_df.append(row_data, ignore_index=True)
 
     def assign_trainee_to_centre(self):
-        self.centres_df[]
+        #self.centres_df[]
 
     def graduating_trainees(self):
-        # checks that if trainees are due to graduate, reassigns centre to 'none' and status to 'benched'
-        self.assign_trainee_to_course()
         for index in self.trainee_df.loc[self.trainee_df["Stop month"] == self.current_month].index:
             x = self.trainee_df.loc[index, "Assigned centre ID"]
             self.trainee_df.loc[index, "Assigned centre ID"] = "None"
@@ -138,22 +184,29 @@ class SpartaSimulation:
                         self.trainee_df.loc[trainee]['Start month'] = 0
                         self.trainee_df.loc[trainee]['Stop month'] = 0
                         self.trainee_df.loc[trainee]['Status'] = 'Waiting'
-                        self.trainee_df.loc[trainee]['Assigned centre ID'] = 0
+                        self.trainee_df.loc[trainee]['Assigned centre ID'] = 'None'
 
-            if self.centres_df.loc[centreID]['Trainee count'] < 25 and self.centres_df.loc[centreID]['Centre status'] == 'Open':
+            if self.centres_df.loc[centreID]['Trainee count'] < 25 and \
+                    self.centres_df.loc[centreID]['Centre status'] == 'Open':
                 self.centres_df.loc[centreID]['Low att month counter'] += 1
             else:
                 self.centres_df.loc[centreID]['Low att month counter'] = 0
 
-            if self.centres_df.loc[centreID]['Centre_type'] == 'Boot camp' and self.centres_df.loc[centreID]['Low att month counter'] >= 3 and self.centres_df.loc[centreID]['Centre status'] == 'Open':
+            if self.centres_df.loc[centreID]['Centre_type'] == 'Boot camp' and \
+                    self.centres_df.loc[centreID]['Low att month counter'] >= 3 and \
+                    self.centres_df.loc[centreID]['Centre status'] == 'Open':
                 update_centre()
                 update_trainee()
 
-            elif self.centres_df.loc[centreID]['Centre_type'] == 'Hub' and self.centres_df.loc[centreID]['Low att month counter'] >= 1 and self.centres_df.loc[centreID]['Centre status'] == 'Open':
+            elif self.centres_df.loc[centreID]['Centre_type'] == 'Hub' and \
+                    self.centres_df.loc[centreID]['Low att month counter'] >= 1 and \
+                    self.centres_df.loc[centreID]['Centre status'] == 'Open':
                 update_centre()
                 update_trainee()
 
-            elif self.centres_df.loc[centreID]['Centre_type'] == 'Tech centre' and self.centres_df.loc[centreID]['Low att month counter'] >= 1 and self.centres_df.loc[centreID]['Centre status'] == 'Open':
+            elif self.centres_df.loc[centreID]['Centre_type'] == 'Tech centre' and \
+                    self.centres_df.loc[centreID]['Low att month counter'] >= 1 and \
+                    self.centres_df.loc[centreID]['Centre status'] == 'Open':
                 update_centre()
                 update_trainee()
 
@@ -221,17 +274,24 @@ class SpartaSimulation:
 
         logging.log(log_type, f"\n")
 
-
     def new_simulation_loop(self):
         while self.current_month <= self.stopping_month:
             if self.current_month % 2 == 1:
                 self.create_centre()
-            self.trainee_generator()
+
             self.graduating_trainees()
-            self.assign_trainee_to_course()
+
+            self.assign_new_trainees_to_data_frame()
+
             # assign trainee to centre method
-            # close centres method
-            # client methods
+
+            self.close_centre()
+
+            self.add_new_client_order()
+            self.add_repeat_client_order()
+            self.end_of_client_order_resolve()
+
             self.print_centre_information()
             self.print_trainee_information()
+
             self.month_inc()
