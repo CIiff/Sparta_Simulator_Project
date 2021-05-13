@@ -162,7 +162,7 @@ class SpartaSimulation:
 
         logging.log(log_type, f"Trainee Information for month {self.current_month}:")
 
-        status_list = ["Waiting", "Training", "Benched"]
+        status_list = ["Waiting", "Training", "Benched", "Working"]
         for status in status_list:
 
             total = self.trainee_df.loc[self.trainee_df['Status'] == status].count()[0]
