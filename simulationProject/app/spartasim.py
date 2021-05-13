@@ -23,7 +23,7 @@ class SpartaSimulation:
         # self.centre_types = {'Boot camp': 0, 'Hub': 0, 'Tech': {'Java':0,'C#':0,'Data':0,'DevOps':0,'Business':0}}
         self.available_centre_types = ['Boot camp', 'Hub', 'Tech centre']
         self.available_tech_centre_types = ['Java', 'C#', 'Data', 'DevOps', 'Business']
-        # self.simulation_loop()
+        self.new_simulation_loop()
 
     def month_inc(self):
         self.current_month += 1
@@ -90,13 +90,6 @@ class SpartaSimulation:
 
         # prioritise filling centres with less than 25 and tech centres, the fill hub and boot camp
 
-    def simulation_loop(self):
-        while self.current_month <= self.stopping_month:
-            if self.current_month % 2 == 1 and self.current_month != 1:
-                self.add_new_center()
-            self.trainee_generator()
-            self.month_inc()
-
     def assign_trainee_to_course(self):
         num_new_trainees = self.trainee_generator()
         for trainee in range(num_new_trainees):
@@ -104,13 +97,14 @@ class SpartaSimulation:
                         "Stop month": 0, "Status": "Waiting"}
             self.trainee_df = self.trainee_df.append(row_data, ignore_index=True)
 
-    def complete_trainees(self):
+    def graduating_trainees(self):
+        # checks that if trainees are due to graduate, reassigns centre to 'none' and status to 'benched'
         self.assign_trainee_to_course()
         for index in self.trainee_df.loc[self.trainee_df["Stop month"] == self.current_month].index:
+            x = self.trainee_df.loc[index, "Assigned centre ID"]
             self.trainee_df.loc[index, "Assigned centre ID"] = "None"
             self.trainee_df.loc[index, "Status"] = "Benched"
-            self.centres_df["Trainee count"] -= 1
-        return self.trainee_df
+            self.centres_df.loc[x, ["Trainee count"]] -= 1
 
     def print_centre_information(self):
         if self.current_month == self.stopping_month:
@@ -169,3 +163,23 @@ class SpartaSimulation:
             logging.log(log_type, f"    Business : {business}\n")
 
         logging.log(log_type, f"\n")
+
+# AS A user
+# I WANT the looping method that considers the newest requirements
+# SO THAT the simulation runs with newest specifications
+# centre creation, generate trainees, assign trainees to centre, trainees graduate, close centres, print centre summary,
+# print trainee summary
+
+    def new_simulation_loop(self):
+        while self.current_month <= self.stopping_month:
+            if self.current_month % 2 == 1:
+                self.create_centre()
+            self.trainee_generator()
+            self.graduating_trainees()
+            self.assign_trainee_to_course()
+            # assign trainee to centre method
+            # close centres method
+            # client methods
+            self.print_centre_information()
+            self.print_trainee_information()
+            self.month_inc()
