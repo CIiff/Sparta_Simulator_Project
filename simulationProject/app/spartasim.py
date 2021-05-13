@@ -152,7 +152,7 @@ class SpartaSimulation:
 
             def update_trainee():
                 for trainee in self.trainee_df.index:
-                    if self.trainee_df.loc[trainee]['CentreID_FK'] == centreID:
+                    if self.trainee_df.loc[trainee]['Assigned centre ID'] == centreID:
 
                         self.trainee_df.loc[trainee]['Start month'] = 0
                         self.trainee_df.loc[trainee]['Stop month'] = 0
@@ -165,19 +165,19 @@ class SpartaSimulation:
             else:
                 self.centres_df.loc[centreID]['Low att month counter'] = 0
 
-            if self.centres_df.loc[centreID]['Centre_type'] == 'Boot camp' and \
+            if self.centres_df.loc[centreID]['Centre type'] == 'Boot camp' and \
                     self.centres_df.loc[centreID]['Low att month counter'] >= 3 and \
                     self.centres_df.loc[centreID]['Centre status'] == 'Open':
                 update_centre()
                 update_trainee()
 
-            elif self.centres_df.loc[centreID]['Centre_type'] == 'Hub' and \
+            elif self.centres_df.loc[centreID]['Centre type'] == 'Hub' and \
                     self.centres_df.loc[centreID]['Low att month counter'] >= 1 and \
                     self.centres_df.loc[centreID]['Centre status'] == 'Open':
                 update_centre()
                 update_trainee()
 
-            elif self.centres_df.loc[centreID]['Centre_type'] == 'Tech centre' and \
+            elif self.centres_df.loc[centreID]['Centre type'] == 'Tech centre' and \
                     self.centres_df.loc[centreID]['Low att month counter'] >= 1 and \
                     self.centres_df.loc[centreID]['Centre status'] == 'Open':
                 update_centre()
