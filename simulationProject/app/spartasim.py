@@ -1,10 +1,12 @@
 import random
-import pandas as pd
 import numpy as np
-import matplotlib.pyplot as plt
 from collections import Counter
 import csv
 from tabulate import tabulate
+import pandas as pd
+import scipy.stats as stats
+import logging
+import scipy
 
 
 class SpartaSimulation:
@@ -21,21 +23,31 @@ class SpartaSimulation:
         self.centres_df = pd.DataFrame(columns=['Centre type', 'Trainee count', 'Max capacity','Low att month counter', 'Centre course type','Centre status'])
         self.available_centre_types = ['Boot camp', 'Hub', 'Tech centre']
         self.simulation_loop()
+        self.new_simulation_loop()
+
 
     def month_inc(self):
         self.current_month += 1
 
     def trainee_generator(self):
-
         new_train_mean = (self.min_trainees + self.max_trainees)/2.0
         new_train_stdev = (new_train_mean - self.min_trainees)/3.0
         num_new_trainees = float(stats.truncnorm.rvs(
-                  (self.min_trainees-new_train_mean)/new_train_stdev,
-                  (self.max_trainees-new_train_mean)/new_train_stdev,
-                  loc=new_train_mean, scale=new_train_stdev, size=1))
+            (self.min_trainees-new_train_mean)/new_train_stdev,
+            (self.max_trainees-new_train_mean)/new_train_stdev,
+            loc=new_train_mean, scale=new_train_stdev, size=1))
         return round(num_new_trainees)
 
-        self.monthly_generated_trainees = random.randint(self.min_trainees, self.max_trainees)
+    def assign_trainees_to_center(self):
+        self.num_waiting_list += self.num_monthly_trainees
+        for key in self.centers.keys():
+            trainees = min(self.centre_max_capacity -
+                           self.centers[key], self.num_waiting_list)
+            self.centers[key] += trainees
+            self.trainees_in_training += trainees
+            self.num_waiting_list -= trainees
+        self.monthly_generated_trainees = random.randint(
+            self.min_trainees, self.max_trainees)
 
     def create_centre(self):
         self.count_centres()
@@ -93,13 +105,132 @@ class SpartaSimulation:
             self.trainee_generator()
             self.month_inc()
 
-
     def assign_trainee_to_course(self):
         num_new_trainees = self.trainee_generator()
         for trainee in range(num_new_trainees):
-            row_data = {"Course type": random.choice(self.courses), "Assigned centre ID": "None",
-                        "Start month": 0, "Stop month": 0, "Status": "Waiting"}
-            self.trainee_df = self.trainee_df.append(row_data, ignore_index=True)
+            row_data = {"Assigned centre ID": "None", "Course type": random.choice(self.courses), "Start month": 0,
+                        "Stop month": 0, "Status": "Waiting"}
+            self.trainee_df = self.trainee_df.append(
+                row_data, ignore_index=True)
 
-a = SpartaSimulation()
+    def graduating_trainees(self):
+        # checks that if trainees are due to graduate, reassigns centre to 'none' and status to 'benched'
+        self.assign_trainee_to_course()
+        for index in self.trainee_df.loc[self.trainee_df["Stop month"] == self.current_month].index:
+            x = self.trainee_df.loc[index, "Assigned centre ID"]
+            self.trainee_df.loc[index, "Assigned centre ID"] = "None"
+            self.trainee_df.loc[index, "Status"] = "Benched"
+            self.centres_df.loc[x, ["Trainee count"]] -= 1
 
+    def close_centre(self):
+
+        def update_centre():
+            self.centres_df.loc[centreID]['Centre status'] = 'Closed'
+            self.centres_df.loc[centreID]['Trainee count'] = 0
+
+        for centreID in self.centres_df.index:
+
+            def update_trainee():
+                for trainee in self.trainee_df.index:
+                    if self.trainee_df.loc[trainee]['CentreID_FK'] == centreID:
+
+                        self.trainee_df.loc[trainee]['Start month'] = 0
+                        self.trainee_df.loc[trainee]['Stop month'] = 0
+                        self.trainee_df.loc[trainee]['Status'] = 'Waiting'
+                        self.trainee_df.loc[trainee]['Assigned centre ID'] = 0
+
+            if self.centres_df.loc[centreID]['Trainee count'] < 25 and self.centres_df.loc[centreID]['Centre status'] == 'Open':
+                self.centres_df.loc[centreID]['Low att month counter'] += 1
+            else:
+                self.centres_df.loc[centreID]['Low att month counter'] = 0
+
+            if self.centres_df.loc[centreID]['Centre_type'] == 'Boot camp' and self.centres_df.loc[centreID]['Low att month counter'] >= 3 and self.centres_df.loc[centreID]['Centre status'] == 'Open':
+                update_centre()
+                update_trainee()
+
+            elif self.centres_df.loc[centreID]['Centre_type'] == 'Hub' and self.centres_df.loc[centreID]['Low att month counter'] >= 1 and self.centres_df.loc[centreID]['Centre status'] == 'Open':
+                update_centre()
+                update_trainee()
+
+            elif self.centres_df.loc[centreID]['Centre_type'] == 'Tech centre' and self.centres_df.loc[centreID]['Low att month counter'] >= 1 and self.centres_df.loc[centreID]['Centre status'] == 'Open':
+                update_centre()
+                update_trainee()
+
+    def print_centre_information(self):
+        if self.current_month == self.stopping_month:
+            log_type = 20
+        else:
+            log_type = 10
+
+        logging.log(
+            log_type, f"Centre Information for month {self.current_month}:")
+
+        centre_status = ["Open", "Full", "Closed"]
+        for status in centre_status:
+            total = self.centres_df.loc[self.centres_df['Centre status'] == status].count()[
+                0]
+            bootcamp = self.centres_df.loc[
+                (self.centres_df['Centre status'] == status) & (self.centres_df['Centre type'] == 'Boot camp')].count()[
+                0]
+            hub = self.centres_df.loc[
+                (self.centres_df['Centre status'] == status) & (self.centres_df['Centre type'] == 'Hub')].count()[0]
+            tech_centre = self.centres_df.loc[(self.centres_df['Centre status'] == status) & (
+                self.centres_df['Centre type'] == 'Tech centre')].count()[0]
+
+            logging.log(
+                log_type, f"Number of Centres which are {status.lower()}: {total}")
+            logging.log(log_type, f"    Boot camps   : {bootcamp}")
+            logging.log(log_type, f"    Hubs         : {hub}")
+            logging.log(log_type, f"    Tech Centres : {tech_centre}\n")
+
+        logging.log(log_type, f"\n")
+
+    def print_trainee_information(self):
+        if self.current_month == self.stopping_month:
+            log_type = 20
+        else:
+            log_type = 10
+
+        logging.log(
+            log_type, f"Trainee Information for month {self.current_month}:")
+
+        status_list = ["Waiting", "Training", "Benched", "Working"]
+        for status in status_list:
+
+            total = self.trainee_df.loc[self.trainee_df['Status'] == status].count()[
+                0]
+            data = self.trainee_df.loc[
+                (self.trainee_df['Status'] == status) & (self.trainee_df['Course type'] == "Data")].count()[0]
+            devops = self.trainee_df.loc[
+                (self.trainee_df['Status'] == status) & (self.trainee_df['Course type'] == "DevOps")].count()[0]
+            java = self.trainee_df.loc[
+                (self.trainee_df['Status'] == status) & (self.trainee_df['Course type'] == "Java")].count()[0]
+            c_sharp = self.trainee_df.loc[
+                (self.trainee_df['Status'] == status) & (self.trainee_df['Course type'] == "C#")].count()[0]
+            business = self.trainee_df.loc[
+                (self.trainee_df['Status'] == status) & (self.trainee_df['Course type'] == "Business")].count()[0]
+
+            logging.log(
+                log_type, f"Number of trainees which are {status.lower()}: {total}")
+            logging.log(log_type, f"    Data     : {data}")
+            logging.log(log_type, f"    DevOps   : {devops}")
+            logging.log(log_type, f"    Java     : {java}")
+            logging.log(log_type, f"    C#       : {c_sharp}")
+            logging.log(log_type, f"    Business : {business}\n")
+
+        logging.log(log_type, f"\n")
+
+
+    def new_simulation_loop(self):
+        while self.current_month <= self.stopping_month:
+            if self.current_month % 2 == 1:
+                self.create_centre()
+            self.trainee_generator()
+            self.graduating_trainees()
+            self.assign_trainee_to_course()
+            # assign trainee to centre method
+            # close centres method
+            # client methods
+            self.print_centre_information()
+            self.print_trainee_information()
+            self.month_inc()
