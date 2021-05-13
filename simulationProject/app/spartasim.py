@@ -20,6 +20,9 @@ class SpartaSimulation:
         self.status_list = ["Waiting", "Training", "Benched"]
         self.centres_df = pd.DataFrame(columns=['Centre type', 'Trainee count', 'Max capacity', 'Low att month counter',
                                                 'Centre course type', 'Centre status'])
+        self.client_orders_df = pd.DataFrame(columns=['Client ID', 'Month advert placed', 'Month advert removed',
+                                                      'Course requested', 'Spartans requested', 'Spartans obtained',
+                                                      'Happy? (T/F)'])
         # self.centre_types = {'Boot camp': 0, 'Hub': 0, 'Tech': {'Java':0,'C#':0,'Data':0,'DevOps':0,'Business':0}}
         self.available_centre_types = ['Boot camp', 'Hub', 'Tech centre']
         self.available_tech_centre_types = [
@@ -94,6 +97,55 @@ class SpartaSimulation:
                 self.available_centre_types.remove('Boot camp')
         if 'Boot camp' not in self.available_centre_types and bootcamp < 2:
             self.available_centre_types.append('Boot camp')
+
+    def initialize_client_order(self):
+        if self.current_month >= 13:
+            # variables below apply for returning AND new clients
+            client_course = random.choice(self.courses)
+            spartans_needed_rand = random.choice(range(15, 51))
+            if len(self.client_orders_df) == 0:  # should only occur for first DF entry
+                new_client_id = 1
+            else:
+                new_client_id = int(max(self.client_orders_df['Client ID']) + 1)
+            new_order = {'Client ID': new_client_id,
+                         'Month advert placed': self.current_month, 'Month advert removed': self.current_month + 12,
+                         'Course requested': client_course, 'Spartans requested': spartans_needed_rand,
+                         'Spartans obtained': 0, 'Happy? (T/F)': True}
+
+            # append new_order to the dataframe
+            self.client_orders_df.append(new_order, ignore_index=True)
+
+    def add_repeat_clients(self):
+        happy_client_index_list = self.client_orders_df.index[self.client_orders_df['Happy? (T/F)']].tolist()
+        # if DF empty, should be no happy clients
+        for happy_index in happy_client_index_list:
+            # get row info for each index with a 'happy' client - so unhappy clients never place new orders.
+            retrieval_row = self.client_orders_df.iloc[happy_index, :]
+            if retrieval_row['Month advert removed'] == (self.current_month - 12):
+                # only take new orders from existing happy clients 12 months after their previous order was
+                # successfully completed
+                client_course = random.choice(self.courses)
+                spartans_needed_rand = random.choice(range(15, 51))
+                old_client_new_order = {'Client ID': retrieval_row['Client ID'],
+                                        'Month advert placed': self.current_month,
+                                        'Month advert removed': self.current_month + 12,
+                                        'Course requested': client_course, 'Spartans requested': spartans_needed_rand,
+                                        'Spartans obtained': 0, 'Happy? (T/F)': True}
+                self.client_orders_df.append(old_client_new_order, ignore_index=True)
+
+    def end_of_order_resolution(self):
+        # END-OF-ORDER CODE
+        fulfilled_index_list = self.client_orders_df.index[self.client_orders_df['Spartans requested'] ==
+                                                           self.client_orders_df['Spartans obtained']].tolist()
+        time_up_index_list = self.client_orders_df.index[self.current_month ==
+                                                         self.client_orders_df['Month advert removed']].tolist()
+        for index, i_row in self.client_orders_df.iterrows():  # i = index, i_row = all row info at index i
+            # if successful: right part of 'and' statement prevents assignments for old orders in DF
+            if (index in fulfilled_index_list) and (self.current_month <= i_row['Month advert removed']):
+                i_row['Month advert removed'] = self.current_month
+            # else: not enough spartans recruited
+            elif index in time_up_index_list:
+                i_row['Happy? (T/F)'] = False
 
     def simulation_loop(self):
         while self.current_month <= self.stopping_month:
