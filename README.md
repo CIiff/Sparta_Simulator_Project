@@ -30,7 +30,7 @@ Before you continue, ensure you have met the following requirements:
    * The number of months you would like the simulator to run for
    * The minimum number of trainees to generate per month
    * The maximum number of trainees to generate per month
-   * Specify the login_type as 'INFO' to view a month by month output or 'DEBUG' for a final output.
+   * Specify the login_type as 'DEBUG' to view a month by month output or 'INFO' for a final output.
 
 3. Open the 'main.py' file and run this file.
 4. You should now see information about the Sparta Global Academy for the simulated number of months.
