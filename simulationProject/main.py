@@ -11,16 +11,17 @@ max_new_monthly_trainees = float(config.get('INPUT', 'max_new_trainees_per_month
 login_type = config.get('INPUT', 'login_type')
 
 
-def main(months, min_new_monthly_trainees, max_new_monthly_trainees, login_type):
+def main(months_to_run, min_trainees, max_trainees, login):
 
-    if login_type == "INFO":
+    if login == "INFO":
         logging.basicConfig(format='%(message)s', level=20)
-    elif login_type == "DEBUG":
+    elif login == "DEBUG":
         logging.basicConfig(format='%(message)s', level=10)
 
     print(f"This simulation is running for {months} months")
-    SpartaSimulation_object = SpartaSimulation(months, min_new_monthly_trainees, max_new_monthly_trainees)
-    print(SpartaSimulation_object.client_orders_df.to_string())
+
+    SpartaSimulation(months_to_run, min_trainees, max_trainees)
+
 
 if __name__ == '__main__':
     main(months, min_new_monthly_trainees, max_new_monthly_trainees, login_type)
