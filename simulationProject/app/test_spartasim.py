@@ -1,11 +1,12 @@
 import unittest
+import math
 from spartasim import SpartaSimulation
 
 
-class SpartaSimulationTests(unittest.TestCase):
+class SpartaSimulationTests(unittest.TestCase, SpartaSimulation):
 
     def setUp(self):
-        self.months_to_simulate = 10
+        self.months_to_simulate = 20
         self.min_trainees = 20
         self.max_trainees = 30
         self.sim = SpartaSimulation(self.months_to_simulate, self.min_trainees, self.max_trainees)
@@ -23,22 +24,20 @@ class SpartaSimulationTests(unittest.TestCase):
         self.assertGreaterEqual(random_number, self.sim.min_trainees)
         self.assertLessEqual(random_number, self.sim.max_trainees)
 
-    def test_assign_trainee_to_course(self):
-        self.sim.assign_trainee_to_course()
-        self.assertEqual(sum(value != "None" for value in self.sim.trainee_df["Assigned centre ID"]), 0)
+    def test_trainee_df(self):
+        self.assertEqual(
+            sum((type(value) != int and value != "None") for value in self.sim.trainee_df["Assigned centre ID"]), 0)
         self.assertEqual(sum(value not in self.sim.courses for value in self.sim.trainee_df["Course type"]), 0)
-        self.assertEqual(sum(value != 0 for value in self.sim.trainee_df["Start month"]), 0)
-        self.assertEqual(sum(value != 0 for value in self.sim.trainee_df["Stop month"]), 0)
-        self.assertEqual(sum(value != "Waiting" for value in self.sim.trainee_df["Status"]), 0)
+        self.assertEqual(sum(value < 1 for value in self.sim.trainee_df["Start month"]), 0)
+        self.assertEqual(sum(value < 13 for value in self.sim.trainee_df["Stop month"]), 0)
+        self.assertEqual(sum(value not in ["Waiting", "Training", "Benched", "Working"] for value in self.sim.trainee_df["Status"]), 0)
 
-    def test_create_centre(self):
-
-        self.sim.create_centre()
-
-        self.assertEqual(sum(value not in self.sim.available_centre_types for value in self.sim.centres_df["Centre type"]), 0)
-        self.assertEqual(sum(value != 0 for value in self.sim.centres_df["Trainee count"]), 0)
-        self.assertEqual(sum(value != 0 for value in self.sim.centres_df["Low att month counter"]), 0)
-        self.assertEqual(sum(value != "open" for value in self.sim.centres_df["Centre status"]), 0)
+    def test_centre_df(self):
+        self.assertEqual(
+            sum(value not in ['Boot camp', 'Hub', 'Tech centre'] for value in self.sim.centres_df["Centre type"]), 0)
+        self.assertEqual(sum(type(value) != int for value in self.sim.centres_df["Trainee count"]), 0)
+        self.assertEqual(sum(value not in ["Open", "Closed", "Full"] for value in self.sim.centres_df["Centre status"]),
+                         0)
 
         for value in range(0, len(self.sim.centres_df)):
             if self.sim.centres_df["Centre type"][value] == "Hub":
@@ -51,79 +50,56 @@ class SpartaSimulationTests(unittest.TestCase):
 
             if self.sim.centres_df["Centre type"][value] == "Tech centre":
                 self.assertEqual(self.sim.centres_df["Max capacity"][value], 200)
-                self.assertEqual(sum(value not in self.sim.available_tech_centre_types for value in self.sim.centres_df["Centre course type"]),0)
+                self.assertNotEqual(self.sim.centres_df["Centre course type"][value], "None")
 
-    # # tests get functions:
-    # def test_get_num_open_centres(self):
-    #     self.assertEqual(self.sim.get_num_open_centres(), 6)
-    #
-    # def test_get_num_full_centres(self):
-    #     self.assertEqual(self.sim.get_num_full_centres(), 2)
-    #
-    # def test_get_num_current_trainees(self):
-    #     self.assertGreaterEqual(self.sim.trainees_in_training, self.months_to_simulate*20)
-    #     self.assertLessEqual(self.sim.trainees_in_training, self.months_to_simulate*30)
-    #
-    # def test_get_num_waiting_list(self):
-    #     self.assertEqual(self.sim.get_num_waiting_list(), 0)
-    #
-    #
-    # def test_center_dict_keys(self):
-    #     no_of_locs = self.months_to_simulate // 2
-    #     self.assertEqual(list(self.sim.centers.keys()), [i for i in range(1, no_of_locs + 2)])
+    # def test_client_orders_df(self):
+    #     self.assertEqual(sum(value != "None" for value in self.sim.client_orders_df["Client ID"]), 0)
+    #     self.assertEqual(sum(value not in self.sim.courses for value in self.sim.client_orders_df["Month advert placed"]), 0)
+    #     self.assertEqual(sum(value != 0 for value in self.sim.client_orders_df["Month advert removed"]), 0)
+    #     self.assertEqual(sum(value != 0 for value in self.sim.client_orders_df["Course requested"]), 0)
+    #     self.assertEqual(sum(value != "Waiting" for value in self.sim.client_orders_df["Spartans requested"]), 0)
+    #     self.assertEqual(sum(value != "Waiting" for value in self.sim.client_orders_df["Spartans obtained"]), 0)
+    #     self.assertEqual(sum(value != "Waiting" for value in self.sim.client_orders_df["Happy? (T/F)"]), 0)
 
-    # def test_assign_trainee_to_center(self):
-    #     for v in self.sim.centers.values():
-    #         self.assertLessEqual(v, 100)
-    #
-    #     self.sim.num_monthly_trainees = 0
-    #
-    #     self.sim.centers = {1: 50}
-    #     self.sim.num_waiting_list = 150
-    #     self.sim.assign_trainees_to_center()
-    #     self.assertEqual(self.sim.centers[1], 100)
-    #     self.assertEqual(self.sim.num_waiting_list, 100)
-    #
-    #     self.sim.centers = {1: 50}
-    #     self.sim.num_waiting_list = 30
-    #     self.sim.assign_trainees_to_center()
-    #     self.assertEqual(self.sim.centers[1], 80)
-    #     self.assertEqual(self.sim.num_waiting_list, 0)
-    #
-    #     self.sim.centers = {1: 100, 2: 50}
-    #     self.sim.num_waiting_list = 20
-    #     self.sim.assign_trainees_to_center()
-    #     self.assertEqual(self.sim.centers[1], 100)
-    #     self.assertEqual(self.sim.centers[2], 70)
-    #     self.assertEqual(self.sim.num_waiting_list, 0)
-    #
-    #     self.sim.centers = {1: 0, 2: 0}
-    #     self.sim.num_waiting_list = 150
-    #     self.sim.assign_trainees_to_center()
-    #     self.assertEqual(self.sim.centers[1], 100)
-    #     self.assertEqual(self.sim.centers[2], 50)
-    #     self.assertEqual(self.sim.num_waiting_list, 0)
-    #
-    #     self.sim.centers = {1: 100, 2: 90}
-    #     self.sim.num_waiting_list = 20
-    #     self.sim.assign_trainees_to_center()
-    #     self.assertEqual(self.sim.centers[1], 100)
-    #     self.assertEqual(self.sim.centers[2], 100)
-    #     self.assertEqual(self.sim.num_waiting_list, 10)
+    def test_count_dfs(self):
+        self.assertGreaterEqual(len(self.sim.trainee_df), self.sim.min_trainees * self.months_to_simulate)
+        self.assertLessEqual(len(self.sim.trainee_df), self.sim.max_trainees * self.months_to_simulate)
 
-    # def test_count_full_centers(self):
-    #     self.sim.centers = {1: 100, 2: 100, 3: 50}
-    #     self.sim.count_full_centers()
-    #     self.assertEqual(self.sim.num_full_centres, 2)
-    #
-    #     self.sim.centers = {1: 0, 2: 0, 3: 50}
-    #     self.sim.count_full_centers()
-    #     self.assertEqual(self.sim.num_full_centres, 0)
-    #
-    #     self.sim.centers = {1: 100, 2: 100, 3: 100}
-    #     self.sim.count_full_centers()
-    #     self.assertEqual(self.sim.num_full_centres, 3)
-    #
-    #     self.sim.centers = {1: 100, 2: 100, 3: 50, 4: 30, 5: 100}
-    #     self.sim.count_full_centers()
-    #     self.assertEqual(self.sim.num_full_centres, 3)
+        self.assertEqual(len(self.sim.centres_df), math.ceil(1 / 2 * (self.months_to_simulate + 1)))
+
+        self.assertEqual(len(self.sim.client_orders_df), self.months_to_simulate - 11)
+
+    def test_centre_type(self):
+        for value in range(0, len(self.sim.trainee_df)):
+            if self.months_to_simulate < 13:
+                self.assertIn(self.sim.trainee_df["Status"][value], ["Waiting", "Training"])
+            else:
+                self.assertIn(self.sim.trainee_df["Status"][value], ["Waiting", "Training", "Benched", "Working"])
+
+        self.assertLessEqual(len(self.sim.centres_df[(self.sim.centres_df['Centre type'] == "Hub") & (
+                self.sim.centres_df["Centre status"] == "Open")]), 3)
+        self.assertLessEqual(len(self.sim.centres_df[(self.sim.centres_df['Centre type'] == "Boot camp") & (
+                self.sim.centres_df["Centre status"] == "Open")]), 2)
+
+        for value in range(0, len(self.sim.centres_df)):
+            if (self.sim.centres_df["Centre type"][value] != "Boot camp" and
+                    self.sim.centres_df["Trainee count"][value] < 25):
+
+                # print(self.sim.centres_df.iloc[value:value + 1])
+                # print(self.sim.centres_df["Centre type"][value] != "Boot camp", self.sim.centres_df["Trainee count"][value] < 25)
+                # print(self.sim.centres_df["Centre type"][value] == "Boot camp", self.sim.centres_df["Low att month counter"][value] >= 3)
+                self.assertEqual(self.sim.centres_df["Centre status"][value], "Closed")
+
+            elif (self.sim.centres_df["Centre type"][value] == "Boot camp" and
+                  self.sim.centres_df["Low att month counter"][value] >= 3):
+
+                # print(self.sim.centres_df.iloc[value:value + 1])
+                # print(self.sim.centres_df["Centre type"][value] != "Boot camp", self.sim.centres_df["Trainee count"][value] < 25)
+                # print(self.sim.centres_df["Centre type"][value] == "Boot camp", self.sim.centres_df["Low att month counter"][value] >= 3)
+                self.assertEqual(self.sim.centres_df["Centre status"][value], "Closed")
+
+            else:
+                # print(self.sim.centres_df.iloc[value:value + 1])
+                # print(self.sim.centres_df["Centre type"][value] != "Boot camp", self.sim.centres_df["Trainee count"][value] < 25)
+                # print(self.sim.centres_df["Centre type"][value] == "Boot camp", self.sim.centres_df["Low att month counter"][value] >= 3)
+                self.assertIn(self.sim.centres_df["Centre status"][value], ["Open", "Full"])
