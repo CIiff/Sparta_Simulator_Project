@@ -210,7 +210,7 @@ class SpartaSimulation:
             if self.centres_df.loc[centreID]['Trainee count'] < 25 and \
                     self.centres_df.loc[centreID]['Centre status'] == 'Open':
                 self.centres_df.loc[centreID]['Low att month counter'] += 1
-            else:
+            elif self.centres_df.loc[centreID]['Centre status'] == 'Open':
                 self.centres_df.loc[centreID]['Low att month counter'] = 0
 
             if self.centres_df.loc[centreID]['Centre type'] == 'Boot camp' and \
